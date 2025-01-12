@@ -38,9 +38,9 @@ out/
 
 
 /db
-/nginx
+/nginx/**.conf
 application.pid 
 /src/main/resources/**.yml
 /src/main/resources/firebase/**.json
-.db
-.sql
+**.db
+**.sql
