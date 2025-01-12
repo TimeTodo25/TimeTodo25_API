@@ -65,8 +65,15 @@ jobs:
           sudo apt-get install -y docker.io
           sudo apt-get install -y docker-compose
           sudo systemctl enable --now docker
-          docker --version  # Docker 버전 확인
-          docker-compose --version  # Docker Compose 버전 확인
+          # Docker와 Docker Compose 버전 확인
+          docker --version
+          docker-compose --version
+          # Docker 경로를 명시적으로 지정
+          echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bashrc
+          source ~/.bashrc
+          # 설치 후 확인
+          which docker
+          which docker-compose
 
       - name: 도커 이미지 빌드 및 푸시
         run: |
