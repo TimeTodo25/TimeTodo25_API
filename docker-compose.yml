@@ -1,5 +1,5 @@
 services:
-  toucheese-api:
+  timetodo-apitest:
     container_name: timetodo-apitest
     image: "harriet99/timetodo-apitest:latest"
     ports:
