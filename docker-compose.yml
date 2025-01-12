@@ -1,0 +1,28 @@
+services:
+  toucheese-api:
+    container_name: timetodo-apitest
+    image: "harriet99/timetodo-apitest:latest"
+    ports:
+      - "8080:8080"  # API 서비스 포트 매핑
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  nginx:
+    image: "nginx:1.15-alpine"
+    restart: unless-stopped
+    volumes:
+      - ./nginx/main_timetodo.conf:/etc/nginx/main_timetodo.conf
+      - ./nginx/sub_timetodo.conf:/etc/nginx/sub_timetodo.conf
+    ports:
+      - "8080:8080"  # Nginx가 수신하는 포트
+      - "4430:4430"  # HTTPS 포트
+    depends_on:
+      - timetodo-apitest
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"

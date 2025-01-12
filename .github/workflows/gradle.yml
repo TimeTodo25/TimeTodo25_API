@@ -15,7 +15,7 @@ jobs:
       - name: JDK 17버전 설치
         uses: actions/setup-java@v4
         with:
-          distribution: corretto
+          distribution: temurin
           java-version: 17
 
       - name: application.yml 파일 만들기
@@ -55,7 +55,7 @@ jobs:
           host: ${{ secrets.AWS_SECRET_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml, ./nginx/main_timetodo.conf, ./nginx/sub_timetodo.conf, ./src/main/resources/timetodo2024-key.json"
+          source: "docker-compose.yml.yml, ./nginx/main_timetodo.conf, ./nginx/sub_timetodo.conf, ./src/main/resources/timetodo2024-key.json"
           target: "/home/ubuntu/docker/"
 
       - name: 도커 이미지 빌드 및 푸시
