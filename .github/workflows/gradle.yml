@@ -58,23 +58,6 @@ jobs:
           source: "docker-compose.yml, ./nginx/main_timetodo.conf, ./nginx/sub_timetodo.conf, ./src/main/resources/timetodo2024-key.json"
           target: "/home/ubuntu/docker/"
 
-      - name: Docker 및 Docker Compose 설치
-        run: |
-          sudo apt-get update
-          sudo apt-get remove -y containerd.io  # containerd 제거
-          sudo apt-get install -y docker.io
-          sudo apt-get install -y docker-compose
-          sudo systemctl enable --now docker
-          # Docker와 Docker Compose 버전 확인
-          docker --version
-          docker-compose --version
-          # Docker 경로를 명시적으로 지정
-          echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bashrc
-          source ~/.bashrc
-          # 설치 후 확인
-          which docker
-          which docker-compose
-
       - name: 도커 이미지 빌드 및 푸시
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
