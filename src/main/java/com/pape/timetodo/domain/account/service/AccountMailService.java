@@ -1,10 +1,5 @@
 package com.pape.timetodo.domain.account.service;
 
-import java.time.LocalDateTime;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.pape.timetodo.domain.account.model.mail.CertificationMailRQ;
 import com.pape.timetodo.domain.account.model.mail.SendMailRQ;
 import com.pape.timetodo.global.common.mail.model.MailSendModel;
@@ -14,11 +9,13 @@ import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
-import com.pape.timetodo.global.jpa.repository.MailRepository;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @Slf4j
