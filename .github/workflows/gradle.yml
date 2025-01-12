@@ -55,8 +55,14 @@ jobs:
           host: ${{ secrets.AWS_SECRET_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml.yml, ./nginx/main_timetodo.conf, ./nginx/sub_timetodo.conf, ./src/main/resources/timetodo2024-key.json"
+          source: "docker-compose.yml, ./nginx/main_timetodo.conf, ./nginx/sub_timetodo.conf, ./src/main/resources/timetodo2024-key.json"
           target: "/home/ubuntu/docker/"
+
+      - name: Docker 및 Docker Compose 설치
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io
+          sudo apt-get install -y docker-compose
 
       - name: 도커 이미지 빌드 및 푸시
         run: |
