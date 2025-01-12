@@ -63,6 +63,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker.io
           sudo apt-get install -y docker-compose
+          sudo systemctl enable --now docker
+          docker --version  # Docker 버전 확인
+          docker-compose --version  # Docker Compose 버전 확인
 
       - name: 도커 이미지 빌드 및 푸시
         run: |
