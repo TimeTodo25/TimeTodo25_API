@@ -17,8 +17,7 @@ services:
       - ./nginx/main_timetodo.conf:/etc/nginx/main_timetodo.conf
       - ./nginx/sub_timetodo.conf:/etc/nginx/sub_timetodo.conf
     ports:
-      - "8080:8080"  # Nginx가 수신하는 포트
-      - "8081:8081"
+      - "8081:8081"  # Nginx가 수신하는 포트
       - "4430:4430"  # HTTPS 포트
     depends_on:
       - timetodo-apitest
