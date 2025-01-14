@@ -33,16 +33,6 @@ jobs:
           printf "%s" "${{ secrets.JWT_YML }}" > ./src/main/resources/jwt.yml
         shell: bash
 
-      - name: main_timetodo.conf 파일 만들기
-        run: |
-          echo "${{ secrets.MAIN_NGINX }}" > ./nginx/main_timetodo.conf
-        shell: bash
-
-      - name: sub_timetodo.conf 파일 만들기
-        run: |
-          echo "${{ secrets.SUB_NGINX }}" > ./nginx/sub_timetodo.conf
-        shell: bash
-
       - name: Firebase Service Key 생성
         run: |
           printf "%s" "${{ secrets.FIREBASE_KEY }}" > ./src/main/resources/firebase/timetodo2024-key.json
@@ -60,7 +50,7 @@ jobs:
           host: ${{ secrets.AWS_SECRET_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml, ./nginx/main_timetodo.conf, ./nginx/sub_timetodo.conf, ./src/main/resources/timetodo2024-key.json"
+          source: "docker-compose.yml, ./src/main/resources/timetodo2024-key.json, ./data, ./letsencrypt"
           target: "/home/ubuntu/docker/"
 
       - name: 도커 이미지 빌드 및 푸시

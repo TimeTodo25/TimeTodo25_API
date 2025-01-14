@@ -10,17 +10,17 @@ services:
         max-size: "100m"
         max-file: "3"
 
-  nginx:
-    image: "nginx:1.15-alpine"
+  nginx-proxy-manager:
+    container_name: npm
+    image: "jc21/nginx-proxy-manager:latest"
     restart: unless-stopped
-    volumes:
-      - ./nginx/main_timetodo.conf:/etc/nginx/main_timetodo.conf
-      - ./nginx/sub_timetodo.conf:/etc/nginx/sub_timetodo.conf
     ports:
-      - "8081:8081"  # Nginx가 수신하는 포트
-      - "4430:4430"  # HTTPS 포트
-    depends_on:
-      - timetodo-apitest
+      - "80:80"     # HTTP 포트
+      - "443:443"   # HTTPS 포트
+      - "81:81"     # NPM 대시보드 포트
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
     logging:
       driver: json-file
       options:
