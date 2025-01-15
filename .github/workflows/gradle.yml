@@ -1,0 +1,74 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "release" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Github Repository 파일 불러오기
+        uses: actions/checkout@v3
+
+      - name: JDK 17버전 설치
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: application.yml 파일 만들기
+        run: |
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+        shell: bash
+
+      - name: application-dev.yml 파일 만들기
+        run: |
+          echo "${{ secrets.APPLICATION_DEV_YML }}" > ./src/main/resources/application-dev.yml
+        shell: bash
+
+      - name: jwt.yml 파일 만들기
+        run: |
+          printf "%s" "${{ secrets.JWT_YML }}" > ./src/main/resources/jwt.yml
+        shell: bash
+
+      - name: Firebase Service Key 생성
+        run: |
+          printf "%s" "${{ secrets.FIREBASE_KEY }}" > ./src/main/resources/firebase/timetodo2024-key.json
+        shell: bash
+
+      - name: gradlew 실행 권한 부여
+        run: chmod +x ./gradlew
+
+      - name: 테스트 및 빌드하기
+        run: ./gradlew clean build
+
+      - name: 도커 파일 서버에 복사
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_SECRET_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml, ./src/main/resources/timetodo2024-key.json, ./data, ./letsencrypt"
+          target: "/home/ubuntu/docker/"
+
+      - name: 도커 이미지 빌드 및 푸시
+        run: |
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -f Dockerfile -t harriet99/timetodo-apitest:latest .
+          docker push harriet99/timetodo-apitest:latest
+
+      - name: 서버 배포
+        uses: appleboy/ssh-action@master
+        id: deploy
+        with:
+          host: ${{ secrets.AWS_SECRET_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/docker/
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d --build
+            docker image prune -f
