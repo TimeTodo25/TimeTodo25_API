@@ -1,0 +1,72 @@
+package com.pape.timetodo.domain.account.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.async.DeferredResult;
+
+import com.pape.timetodo.domain.account.model.mail.CertificationMailRQ;
+import com.pape.timetodo.domain.account.model.mail.SendMailRQ;
+import com.pape.timetodo.domain.account.service.AccountMailService;
+import com.pape.timetodo.global.exception.AppException;
+import com.pape.timetodo.global.exception.ExceptionCode;
+import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@RestController
+@Slf4j
+@RequiredArgsConstructor
+@RequestMapping("/v1/mail")
+@Tag(name = "메일 컨트롤러", description = "메일 발송 및 인증관련 API")
+public class MailController {
+
+    private final AccountMailService mailService;
+
+    /**
+     * 메일 발송, 비동기
+     * @param rq
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/send/register")
+    @Operation(summary = "회원가입 인증메일 발송", description = "유저의 계정을 추가할 때 사용하는 메일발송 입니다.")
+    public DeferredResult<Boolean> sendCertMail(@Valid @RequestBody SendMailRQ rq) throws Exception{
+
+        DeferredResult<Boolean> deferredResult = new DeferredResult<>();
+
+        new Thread(() -> {
+            try {
+                Boolean result = mailService.sendCertMail(rq, MailType.REGISTER_CERT);
+                deferredResult.setResult(result);
+            } catch (Exception e) {
+                log.error("", e);
+                throw new AppException(ExceptionCode.INTERNAL_SERVER_ERROR);
+            }
+        }).start();
+
+        return deferredResult;
+    }
+
+    /**
+     * 메일인증
+     * @param rq
+     * @return
+     */
+    @PutMapping("/certification/register")
+    @Operation(summary = "회원가입 메일 인증", description = "유저의 계정을 추가할 때 사용하는 메일인증 입니다.")
+    public ResponseEntity<Boolean> certificationRegisterMail(@Valid @RequestBody CertificationMailRQ rq){
+
+        Boolean result = mailService.certificationMail(rq, MailType.REGISTER_CERT);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+}
