@@ -39,6 +39,7 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5' // JWT 토큰 라이브러리
 	implementation 'org.springframework.boot:spring-boot-starter-mail' // Spring Mail
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0' // Swagger-UI
+
 	implementation 'com.google.firebase:firebase-admin:9.2.0' // FCM을 위한 라이브러리
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf' // Spring Thymeleaf
 	implementation 'org.json:json:20220320' // ..?
