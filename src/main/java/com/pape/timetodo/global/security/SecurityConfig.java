@@ -1,7 +1,8 @@
 package com.pape.timetodo.global.security;
 
-import java.util.Arrays;
-
+import com.pape.timetodo.global.jpa.repository.UsersRepository;
+import com.pape.timetodo.global.security.model.UserType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,10 +18,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.pape.timetodo.global.jpa.repository.UsersRepository;
-import com.pape.timetodo.global.security.model.UserType;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -44,7 +42,10 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPointHandler customAuthenticationEntryPointHandler;
 
     private final String[] PERMIT_URL = {
-        "/**",
+            "/**", // 차후 삭제
+            "/swagger-ui/**",
+            "/v3/api-docs/**",
+            "/h2-console/**",
     };  
 
     // private final String[] AUTHENTICATION_URL = {
@@ -85,10 +86,11 @@ public class SecurityConfig {
             .formLogin(formLogin -> formLogin.disable())
             .authorizeHttpRequests(authorizeRequests -> {
                 authorizeRequests
+                    .requestMatchers(PERMIT_URL).permitAll()
                     .requestMatchers(AUTHENTICATION_URL).hasAnyAuthority(UserType.USER.getValue(), UserType.COMPANY.getValue(),UserType.ADMIN.getValue())
                     .requestMatchers(COMPANY_AUTH).hasAnyAuthority(UserType.COMPANY.getValue(),UserType.ADMIN.getValue())
                     .requestMatchers(ADMIN_AUTH).hasAnyAuthority(UserType.ADMIN.getValue())
-                    .requestMatchers(PERMIT_URL).permitAll();
+                    .anyRequest().authenticated();
             })
             .addFilter(jwtAuthenticationFilter())
             .addFilterBefore(jwtAuthorizationFilter(), UsernamePasswordAuthenticationFilter.class)
