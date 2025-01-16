@@ -1,13 +1,12 @@
 package com.pape.timetodo.domain.main.model.todo;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Data
 public class UpdateTodoRQ {
@@ -24,10 +23,10 @@ public class UpdateTodoRQ {
     private LocalDate targetDate;
 
     @JsonFormat(pattern = "HH:mm:ss")
-    @Schema(description = "투두 시작시간 [24시간 표시제]", example = "[HH:mm:ss] 09:00:00", implementation = LocalDate.class)
+    @Schema(description = "투두 시작시간 [24시간 표시제]", example = "[HH:mm:ss] 09:00:00", implementation = LocalTime.class)
     private LocalTime startTargetTm;
 
     @JsonFormat(pattern = "HH:mm:ss")
-    @Schema(description = "투두 종료시간 [24시간 표시제]", example = "[HH:mm:ss] 11:00:00", implementation = LocalDate.class)
+    @Schema(description = "투두 종료시간 [24시간 표시제]", example = "[HH:mm:ss] 11:00:00", implementation = LocalTime.class)
     private LocalTime endTargetTm;
 }
