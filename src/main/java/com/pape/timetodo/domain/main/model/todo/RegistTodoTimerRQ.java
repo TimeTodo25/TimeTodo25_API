@@ -1,21 +1,20 @@
 package com.pape.timetodo.domain.main.model.todo;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class RegistTodoTimerRQ {
 
     @NotNull
     @Schema(description = "투두 IDX", example = "1", implementation = Long.class)
-    private Long idx;
+    private Long todoIdx;
 
     @ArraySchema(schema = @Schema(implementation = TimeData.class))
     private List<TimeData> timeDatas;

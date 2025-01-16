@@ -117,8 +117,8 @@ public class TodoService {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        // 실제로 있는 TodoData인지 그리고 자기 자신 Todo 데이터인지 확인
-        TodoEntity todoEntity = todoRepository.findByIdxAndUsersEntity(rq.getIdx(), usersEntity)
+        // 실제로 있는 TodoData인지 그리고 자기 자신 TodoData인지 확인
+        TodoEntity todoEntity = todoRepository.findByIdxAndUsersEntity(rq.getTodoIdx(), usersEntity)
             .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
 
         // 루틴등록을 중복으로 했는지 확인
@@ -334,7 +334,7 @@ public class TodoService {
      * @param rq
      */
     public void registTodoTimer(RegistTodoTimerRQ rq) {
-        TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
+        TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
 
@@ -371,7 +371,7 @@ public class TodoService {
         for(TodoTimerHistoryEntity todoTimerHistoryEntity : todoEntity.getTodoTimerHistoryEntities()){
             TimerHistory node = new TimerHistory();
             node.setStartDt(todoTimerHistoryEntity.getHistoryStartDt());
-            node.setEndDT(todoTimerHistoryEntity.getHistoryEndDt());
+            node.setEndDt(todoTimerHistoryEntity.getHistoryEndDt());
             node.setTotalTm(todoTimerHistoryEntity.getTotalTm());
 
             timerHistories.add(node);
@@ -399,7 +399,7 @@ public class TodoService {
     @Transactional
     public void updateRoutine(UpdateRoutineRQ rq) {
 
-        TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
+        TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
         RoutineEntity routineEntity = todoEntity.getRoutineEntity();
 
         if(routineEntity == null) throw new AppException(ExceptionCode.DATA_NOT_FIND);

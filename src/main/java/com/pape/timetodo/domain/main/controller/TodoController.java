@@ -163,7 +163,7 @@ public class TodoController {
      * @param idx 루틴 삭제할 Todo번호
      * @return
      */
-    @DeleteMapping("/routhin/delete/{idx}")
+    @DeleteMapping("/routine/delete/{idx}")
     @Operation(summary = "루틴삭제", description = "투두 루틴 삭제합니다.")
     public ResponseEntity<Void> deleteRoutine(@PathVariable @Parameter(name="idx", description = "투두 IDX", in = ParameterIn.PATH, example = "1") Long idx){
         
