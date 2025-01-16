@@ -334,7 +334,7 @@ public class TodoService {
      * @param rq
      */
     public void registTodoTimer(RegistTodoTimerRQ rq) {
-        TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
+        TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
 
