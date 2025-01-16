@@ -1,17 +1,7 @@
 package com.pape.timetodo.domain.main.service;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.pape.timetodo.domain.main.model.category.CreateCategoryRQ;
-import com.pape.timetodo.domain.main.model.category.CreateCategoryRS;
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
-import com.pape.timetodo.domain.main.model.category.MyCategoryRS;
-import com.pape.timetodo.domain.main.model.category.UpdateCategoryRQ;
-import com.pape.timetodo.domain.main.model.category.UpdateCategoryRS;
+import com.pape.timetodo.domain.main.model.category.*;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.CategoryEntity;
@@ -19,10 +9,14 @@ import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.CategoryQueryRepository;
 import com.pape.timetodo.global.jpa.repository.CategoryRepository;
 import com.pape.timetodo.global.util.UserUtil;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -59,6 +53,7 @@ public class CategoryService {
         categoryEntity = categoryRepository.save(categoryEntity);
 
         CreateCategoryRS result = new CreateCategoryRS();
+        result.setCategoryIdx(categoryEntity.getIdx());
         result.setCategoryTitle(categoryEntity.getTitle());
         result.setPublicStatus(categoryEntity.getPublicStatus());
         result.setMainColor(categoryEntity.getMainColor());

@@ -1,13 +1,14 @@
 package com.pape.timetodo.domain.main.model.category;
 
-import java.time.LocalDateTime;
-
 import com.pape.timetodo.global.jpa.entity.CategoryEntity.PublicStatus;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class CreateCategoryRS {
+
+    private Long categoryIdx;
 
     private String categoryTitle;
 
