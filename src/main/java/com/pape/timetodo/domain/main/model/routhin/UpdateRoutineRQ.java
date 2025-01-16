@@ -1,24 +1,22 @@
 package com.pape.timetodo.domain.main.model.routhin;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.firebase.database.annotations.NotNull;
-import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.jpa.entity.RoutineEntity.CycleType;
-
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 
 @Data
 public class UpdateRoutineRQ {
 
     @NotNull
     @Schema(description = "투두 IDX", example = "1", implementation = Long.class)
-    private Long idx;
+    private Long todoIdx;
 
     @Schema(description = "반복타입[EVERY_DAY ,EVERY_WEEK, EVERY_MONTH]", example = "EVERY_WEEK", implementation = CycleType.class)
     private CycleType cycleType;
