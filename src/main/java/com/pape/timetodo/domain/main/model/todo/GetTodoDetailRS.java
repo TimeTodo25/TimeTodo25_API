@@ -1,12 +1,11 @@
 package com.pape.timetodo.domain.main.model.todo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import lombok.Data;
 
 @Data
 public class GetTodoDetailRS {
@@ -27,7 +26,7 @@ public class GetTodoDetailRS {
         private LocalDateTime startDt;
 
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        private LocalDateTime endDT;
+        private LocalDateTime endDt;
 
         private LocalTime totalTm;
 

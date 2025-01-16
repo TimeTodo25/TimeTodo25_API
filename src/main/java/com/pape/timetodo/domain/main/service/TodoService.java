@@ -371,7 +371,7 @@ public class TodoService {
         for(TodoTimerHistoryEntity todoTimerHistoryEntity : todoEntity.getTodoTimerHistoryEntities()){
             TimerHistory node = new TimerHistory();
             node.setStartDt(todoTimerHistoryEntity.getHistoryStartDt());
-            node.setEndDT(todoTimerHistoryEntity.getHistoryEndDt());
+            node.setEndDt(todoTimerHistoryEntity.getHistoryEndDt());
             node.setTotalTm(todoTimerHistoryEntity.getTotalTm());
 
             timerHistories.add(node);
