@@ -1,15 +1,14 @@
 package com.pape.timetodo.domain.main.model.routhin;
 
-import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class RegisterRoutineRS {
 
-    private Long idx; // Routine or Todo IDX
+    private Long idx; // Routine or Todo의 IDX ..왜?
 
     private String cycleType;
 
