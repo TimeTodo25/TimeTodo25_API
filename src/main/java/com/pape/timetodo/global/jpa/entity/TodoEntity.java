@@ -35,11 +35,11 @@ public class TodoEntity {
     @Comment(value = "투두 지정일")
     private LocalDate targetDate; // 투두 지정일
 
-    @Column(name = "START_TARGET_DT", nullable = true)
+    @Column(name = "START_TARGET_TM", nullable = true)
     @Comment(value = "투두 시작시간")
     private LocalTime startTargetTm; // 투두 시작시간
 
-    @Column(name = "END_TARGET_DT", nullable = true)
+    @Column(name = "END_TARGET_TM", nullable = true)
     @Comment(value = "투두 종료시간")
     private LocalTime endTargetTm; // 투두 종료시간
     
