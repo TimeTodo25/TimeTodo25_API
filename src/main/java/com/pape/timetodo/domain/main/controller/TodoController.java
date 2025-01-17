@@ -55,11 +55,10 @@ public class TodoController {
     /**
      * Todo_ 삭제
      * @param idx
-     * @return
      */
     @DeleteMapping("/{idx}/delete")
     @Operation(summary = "투두 삭제", description = "투두 데이터를 삭제합니다. [논리삭제]")
-    public ResponseEntity<Boolean> deleteTodo(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "삭제할 투두 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+    public ResponseEntity<Void> deleteTodo(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "삭제할 투두 IDX", in = ParameterIn.PATH, example = "1") Long idx){
 
         if(idx == null){
             throw new AppException(ExceptionCode.NON_VALID_PARAMETER);

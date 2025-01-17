@@ -293,10 +293,9 @@ public class TodoService {
     /**
      * TODO_ 데이터 삭제
      * @param idx
-     * @return DB에 데이터가 미존재해도 TRUE
      */
     @Transactional
-    public Boolean deleteTodo(Long idx) {
+    public void deleteTodo(Long idx) {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
@@ -307,11 +306,6 @@ public class TodoService {
             TodoEntity todoEntity = todoEntityWrapper.get();
             todoEntity.setDeleteDt(LocalDateTime.now());
             todoEntity.setStatus(StatusType.DELETED.getValue());
-
-            return true;
-        } else { // Data가 없을 경우 TRUE 반환
-
-            return true;
         }
     }
 
@@ -472,7 +466,7 @@ public class TodoService {
     }
 
     /**
-     * 루틴 삭제[물리]
+     * 루틴 삭제[물리] -> TODO: 테이블 분리 후 논리 삭제로 변경
      * @param idx
      */
     @Transactional
