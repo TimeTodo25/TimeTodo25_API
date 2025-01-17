@@ -8,7 +8,7 @@ import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
 import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
 import com.pape.timetodo.domain.main.model.todo.*;
-import com.pape.timetodo.domain.main.model.todo.GetTodoDetailRS.TimerHistory;
+import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
 import com.pape.timetodo.global.exception.AppException;
@@ -71,7 +71,8 @@ public class TodoService {
             .usersEntity(usersEntity)
             .targetDate(rq.getDate())
             .deleted(false)
-            .totalTm(LocalTime.of(0, 0, 0));
+//            .totalTm(LocalTime.of(0, 0, 0))
+            ;
 
         if(rq.getStartTargetTm() != null) todoEntityBuilder.startTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntityBuilder.endTargetTm(rq.getEndTargetTm());
@@ -337,13 +338,13 @@ public class TodoService {
     @Transactional
     public void registTodoTimer(RegistTodoTimerRQ rq) {
         TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
-        LocalTime todoTotalTm = todoEntity.getTotalTm();
-
-        // 이미 타이머 기록과 총 시간이 있을 경우 삭제하고 새로 생성 -> Todo 추후 리팩토링 고려
-        if(todoTotalTm != LocalTime.of(0, 0, 0)) {
-            todoEntity.getTodoTimerHistoryEntities().clear();
-            todoTotalTm = LocalTime.of(0, 0, 0);
-        }
+//        LocalTime todoTotalTm = todoEntity.getTotalTm();
+//
+//        // 이미 타이머 기록과 총 시간이 있을 경우 삭제하고 새로 생성 -> Todo 추후 리팩토링 고려
+//        if(todoTotalTm != LocalTime.of(0, 0, 0)) {
+//            todoEntity.getTodoTimerHistoryEntities().clear();
+//            todoTotalTm = LocalTime.of(0, 0, 0);
+//        }
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
 
@@ -351,7 +352,7 @@ public class TodoService {
 
             Duration duration = Duration.between(time.getStartDt(), time.getEndDt());
             long totalSecond = duration.toSeconds();
-            todoTotalTm = todoTotalTm.plusSeconds(totalSecond);
+            // todoTotalTm = todoTotalTm.plusSeconds(totalSecond);
 
             TodoTimerHistoryEntity timerEntity = TodoTimerHistoryEntity.builder()
                 .historyStartDt(time.getStartDt())
@@ -363,8 +364,8 @@ public class TodoService {
             timerHistoryEntities.add(timerEntity);
         }
 
-        todoEntity.setTotalTm(todoTotalTm);
-        todoRepository.save(todoEntity);
+//        todoEntity.setTotalTm(todoTotalTm);
+//        todoRepository.save(todoEntity);
         todoTimerHistoryRepository.saveAll(timerHistoryEntities);
     }
 
@@ -375,6 +376,30 @@ public class TodoService {
      */
     @Transactional(readOnly = true)
     public GetTodoDetailRS detailTodo(Long idx) {
+
+        TodoEntity todoEntity = this.getMyTodoData(idx);
+
+        LocalTime totalTm = LocalTime.MIN.plus(
+            todoEntity.getTodoTimerHistoryEntities().stream()
+                .map(time -> Duration.between(LocalTime.MIN, time.getTotalTm()))
+                .reduce(Duration.ZERO, Duration::plus)
+            );
+
+        GetTodoDetailRS result = new GetTodoDetailRS();
+        result.setIdx(todoEntity.getIdx());
+        result.setContent(todoEntity.getContent());
+        result.setTotalTm(totalTm);
+
+        return result;
+    }
+
+    /**
+     * TODO_ 타이머 기록 상세 조회
+     * @param idx
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public GetTodoTimerHistoryRs detailTodoTimer(Long idx) {
 
         TodoEntity todoEntity = this.getMyTodoData(idx);
 
@@ -389,16 +414,7 @@ public class TodoService {
             timerHistories.add(node);
         }
 
-        LocalTime totalTm = LocalTime.MIN.plus(
-            todoEntity.getTodoTimerHistoryEntities().stream()
-                .map(time -> Duration.between(LocalTime.MIN, time.getTotalTm()))
-                .reduce(Duration.ZERO, Duration::plus)
-            );
-
-        GetTodoDetailRS result = new GetTodoDetailRS();
-        result.setIdx(todoEntity.getIdx());
-        result.setContent(todoEntity.getContent());
-        result.setTotalTm(totalTm);
+        GetTodoTimerHistoryRs result = new GetTodoTimerHistoryRs();
         result.setTimerHistories(timerHistories);
 
         return result;

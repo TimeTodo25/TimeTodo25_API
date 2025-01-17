@@ -1,30 +1,13 @@
 package com.pape.timetodo.domain.main.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.pape.timetodo.domain.main.model.dday.RegisterDayRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
 import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
-import com.pape.timetodo.domain.main.model.todo.CreateTodoRQ;
-import com.pape.timetodo.domain.main.model.todo.CreateTodoRS;
-import com.pape.timetodo.domain.main.model.todo.GetHomeTodoRQ;
-import com.pape.timetodo.domain.main.model.todo.GetHomeTodoRS;
-import com.pape.timetodo.domain.main.model.todo.GetTodoDetailRS;
-import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ;
-import com.pape.timetodo.domain.main.model.todo.UpdateTodoRQ;
+import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.service.TodoService;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -32,6 +15,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -104,7 +89,7 @@ public class TodoController {
      * @param rq
      * @return
      */
-    @PostMapping("/regist/todo/timer")
+    @PostMapping("/register/todo/timer")
     @Operation(summary = "투두 타이머 등록", description = "투두 타이머 스톱워치 데이터를 등록합니다.")
     public ResponseEntity<Void> registTodoTimer(@Valid @RequestBody RegistTodoTimerRQ rq){
 
@@ -124,6 +109,21 @@ public class TodoController {
     public ResponseEntity<GetTodoDetailRS> detailTodo(@PathVariable(name = "idx") @Parameter(name="idx", description = "투두 IDX", in = ParameterIn.PATH, example = "1") Long idx){
 
         GetTodoDetailRS result = todoService.detailTodo(idx);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+
+    /**
+     * Todo_ Timer History 데이터 조회
+     * @param idx
+     * @return
+     */
+    @GetMapping("/detail/{idx}/timer")
+    @Operation(summary = "투두 타이머 데이터 조회", description = "투두 타이머 데이터를 조회합니다.")
+    public ResponseEntity<GetTodoTimerHistoryRs> detailTodoTimer(@PathVariable(name = "idx") @Parameter(name="idx", description = "투두 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        GetTodoTimerHistoryRs result = todoService.detailTodoTimer(idx);
 
         return ResponseEntity.ok().body(result);
     }

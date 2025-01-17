@@ -73,9 +73,9 @@ public class TodoEntity {
     @JoinColumn(name = "IDX", referencedColumnName = "TODO_IDX")
     private RoutineEntity routineEntity;
 
-    @Column(name = "TOTAL_TM", nullable = false)
-    @Comment(value = "해당 TODO 총 시간")
-    private LocalTime totalTm; // Duration이 더 적절하나, "HH:mm:ss" 형식에 맞추기 위해 우선 LocalTime 사용, Todo 추후 수정 고려
+//    @Column(name = "TOTAL_TM", nullable = false)
+//    @Comment(value = "해당 TODO 총 시간")
+//    private LocalTime totalTm; // Duration이 더 적절하나, "HH:mm:ss" 형식에 맞추기 위해 우선 LocalTime 사용, Todo 추후 수정 고려
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE, orphanRemoval = true, mappedBy = "todoEntity")
     private List<TodoTimerHistoryEntity> todoTimerHistoryEntities;
