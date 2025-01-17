@@ -169,7 +169,7 @@ public class TodoController {
         
         if(idx == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER);
 
-        todoService.deleteRoutine(idx);
+        todoService.deleteRoutine(idx); // TODO: 논리 삭제만 진행
 
         return ResponseEntity.ok().build();
     }

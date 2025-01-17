@@ -11,6 +11,7 @@ CREATE TABLE `USERS` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
+  `STATUS` CHAR(1) NOT NULL COMMENT '상태',
   PRIMARY KEY (`USERNAME`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -31,6 +32,7 @@ CREATE TABLE `CATEGORY` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
+  `STATUS` CHAR(1) NOT NULL COMMENT '상태',
   PRIMARY KEY (`IDX`),
   KEY `FKrthissysx2kh1nv3yphxshc4p` (`USERNAME`),
   CONSTRAINT `FKrthissysx2kh1nv3yphxshc4p` FOREIGN KEY (`USERNAME`) REFERENCES `USERS` (`USERNAME`)
@@ -47,8 +49,7 @@ CREATE TABLE `TODO` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
-  `DELETED` bit(1) NOT NULL COMMENT '삭제 여부',
-#   `TOTAL_TM` time(6) NOT NULL COMMENT '해당 TODO 총 시간',
+  `STATUS` CHAR(1) NOT NULL COMMENT '상태',
   PRIMARY KEY (`IDX`),
   KEY `FKou3p1e4wro012h0cpjigl6tw3` (`CATEGORY_IDX`),
   KEY `FK6l1up26vvsa5juhluisme9kvy` (`USERNAME`),
@@ -65,6 +66,7 @@ CREATE TABLE `TERMS` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
+  `STATUS` CHAR(1) NOT NULL COMMENT '상태',
   PRIMARY KEY (`IDX`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -77,6 +79,7 @@ CREATE TABLE `TERMS_AGREE` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
+  `STATUS` CHAR(1) NOT NULL COMMENT '상태',
   PRIMARY KEY (`IDX`),
   KEY `FK20od6sgi7o047ck2ra24uus8p` (`TERMS_IDX`),
   KEY `FKnr2fb9f4al3pj2jt8rd4kauih` (`USERNAME`),
@@ -93,6 +96,7 @@ CREATE TABLE `FRIEND` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
+  `STATUS` CHAR(1) NOT NULL COMMENT '상태',
   PRIMARY KEY (`FRIEND_USERNAME`,`USERNAME`),
   KEY `FKiee50l8ku6of05cmimv7fx09s` (`USERNAME`),
   CONSTRAINT `FKiee50l8ku6of05cmimv7fx09s` FOREIGN KEY (`USERNAME`) REFERENCES `USERS` (`USERNAME`),
@@ -133,7 +137,7 @@ CREATE TABLE `ROUTINE` (
   `START_DT` date NOT NULL COMMENT '루틴 시작일',
   `END_DT` date NOT NULL COMMENT '루틴 종료일',
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
-  `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
+  `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시', # 삭제 필요
   PRIMARY KEY (`IDX`),
   UNIQUE KEY `UK_l1w3b6s1dvq6wpgmspwl3cu1j` (`TOOD_IDX`),
   KEY `FKbdnl0taunaiiakdkkkt34wvj5` (`USERNAME`),
@@ -159,7 +163,7 @@ CREATE TABLE `D_DAY` (
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `TARGET_DEL_YN` bit(1) NOT NULL COMMENT '지정일 이후 삭제여부 [TRUE 일시 배치로 삭제 예정]',
   `TARGET_DT` date NOT NULL COMMENT 'D_DAY 지정일',
-  `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
+  `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시', # 삭제 필요
   PRIMARY KEY (`IDX`),
   KEY `FKgr3x13xx1tabn4gly396gs0v2` (`USERNAME`),
   CONSTRAINT `FKgr3x13xx1tabn4gly396gs0v2` FOREIGN KEY (`USERNAME`) REFERENCES `USERS` (`USERNAME`)

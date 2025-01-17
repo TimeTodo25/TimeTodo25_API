@@ -55,9 +55,9 @@ public class TodoEntity {
     @Comment(value = "삭제일시")
     private LocalDateTime deleteDt; // 삭제일시
 
-    @Column(name = "DELETED", nullable = false)
-    @Comment(value = "삭제 여부")
-    private Boolean deleted; // 삭제여부
+    @Column(name = "STATUS", nullable = false)
+    @Comment(value = "상태")
+    private Character status; // 상태 - 삭제여부 등
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CATEGORY_IDX", referencedColumnName = "IDX")

@@ -11,6 +11,7 @@ import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
+import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.*;
@@ -70,9 +71,7 @@ public class TodoService {
             .categoryEntity(categoryEntity)
             .usersEntity(usersEntity)
             .targetDate(rq.getDate())
-            .deleted(false)
-//            .totalTm(LocalTime.of(0, 0, 0))
-            ;
+            .status(StatusType.NORMAL.getValue());
 
         if(rq.getStartTargetTm() != null) todoEntityBuilder.startTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntityBuilder.endTargetTm(rq.getEndTargetTm());
@@ -307,7 +306,7 @@ public class TodoService {
 
             TodoEntity todoEntity = todoEntityWrapper.get();
             todoEntity.setDeleteDt(LocalDateTime.now());
-            todoEntity.setDeleted(true);
+            todoEntity.setStatus(StatusType.DELETED.getValue());
 
             return true;
         } else { // Data가 없을 경우 TRUE 반환
@@ -338,13 +337,6 @@ public class TodoService {
     @Transactional
     public void registTodoTimer(RegistTodoTimerRQ rq) {
         TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
-//        LocalTime todoTotalTm = todoEntity.getTotalTm();
-//
-//        // 이미 타이머 기록과 총 시간이 있을 경우 삭제하고 새로 생성 -> Todo 추후 리팩토링 고려
-//        if(todoTotalTm != LocalTime.of(0, 0, 0)) {
-//            todoEntity.getTodoTimerHistoryEntities().clear();
-//            todoTotalTm = LocalTime.of(0, 0, 0);
-//        }
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
 
@@ -352,7 +344,6 @@ public class TodoService {
 
             Duration duration = Duration.between(time.getStartDt(), time.getEndDt());
             long totalSecond = duration.toSeconds();
-            // todoTotalTm = todoTotalTm.plusSeconds(totalSecond);
 
             TodoTimerHistoryEntity timerEntity = TodoTimerHistoryEntity.builder()
                 .historyStartDt(time.getStartDt())
@@ -364,8 +355,6 @@ public class TodoService {
             timerHistoryEntities.add(timerEntity);
         }
 
-//        todoEntity.setTotalTm(todoTotalTm);
-//        todoRepository.save(todoEntity);
         todoTimerHistoryRepository.saveAll(timerHistoryEntities);
     }
 
