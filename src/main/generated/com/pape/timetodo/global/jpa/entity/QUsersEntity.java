@@ -1,0 +1,70 @@
+package com.pape.timetodo.global.jpa.entity;
+
+import static com.querydsl.core.types.PathMetadataFactory.*;
+
+import com.querydsl.core.types.dsl.*;
+
+import com.querydsl.core.types.PathMetadata;
+import javax.annotation.processing.Generated;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.PathInits;
+
+
+/**
+ * QUsersEntity is a Querydsl query type for UsersEntity
+ */
+@Generated("com.querydsl.codegen.DefaultEntitySerializer")
+public class QUsersEntity extends EntityPathBase<UsersEntity> {
+
+    private static final long serialVersionUID = 299828286L;
+
+    public static final QUsersEntity usersEntity = new QUsersEntity("usersEntity");
+
+    public final BooleanPath accountNonExpired = createBoolean("accountNonExpired");
+
+    public final BooleanPath accountNonLock = createBoolean("accountNonLock");
+
+    public final SetPath<AuthoritiesEntity, QAuthoritiesEntity> authorities = this.<AuthoritiesEntity, QAuthoritiesEntity>createSet("authorities", AuthoritiesEntity.class, QAuthoritiesEntity.class, PathInits.DIRECT2);
+
+    public final ListPath<CategoryEntity, QCategoryEntity> categoryEntities = this.<CategoryEntity, QCategoryEntity>createList("categoryEntities", CategoryEntity.class, QCategoryEntity.class, PathInits.DIRECT2);
+
+    public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);
+
+    public final DateTimePath<java.time.LocalDateTime> deleteDt = createDateTime("deleteDt", java.time.LocalDateTime.class);
+
+    public final StringPath email = createString("email");
+
+    public final BooleanPath enabled = createBoolean("enabled");
+
+    public final ListPath<FriendEntity, QFriendEntity> friendEntities = this.<FriendEntity, QFriendEntity>createList("friendEntities", FriendEntity.class, QFriendEntity.class, PathInits.DIRECT2);
+
+    public final StringPath nickname = createString("nickname");
+
+    public final NumberPath<Integer> passFailCount = createNumber("passFailCount", Integer.class);
+
+    public final StringPath password = createString("password");
+
+    public final StringPath refreshToken = createString("refreshToken");
+
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
+
+    public final ListPath<TodoEntity, QTodoEntity> todoEntities = this.<TodoEntity, QTodoEntity>createList("todoEntities", TodoEntity.class, QTodoEntity.class, PathInits.DIRECT2);
+
+    public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
+
+    public final StringPath username = createString("username");
+
+    public QUsersEntity(String variable) {
+        super(UsersEntity.class, forVariable(variable));
+    }
+
+    public QUsersEntity(Path<? extends UsersEntity> path) {
+        super(path.getType(), path.getMetadata());
+    }
+
+    public QUsersEntity(PathMetadata metadata) {
+        super(UsersEntity.class, metadata);
+    }
+
+}
+
