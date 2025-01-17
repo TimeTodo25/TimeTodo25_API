@@ -43,7 +43,7 @@ public class TodoController {
     private final TodoService todoService;
 
     /**
-     * Todo 등록
+     * Todo_ 등록
      * @return
      */
     @PostMapping("/create")
@@ -68,7 +68,7 @@ public class TodoController {
     }
 
     /**
-     * Todo 삭제
+     * Todo_ 삭제
      * @param idx
      * @return
      */
@@ -86,7 +86,7 @@ public class TodoController {
     }
 
     /**
-     * Todo 수정
+     * Todo_ 수정
      * @param rq
      * @return
      */
@@ -100,7 +100,7 @@ public class TodoController {
     }
 
     /**
-     * Todo 타이머 데이터 등록
+     * Todo_ 타이머 데이터 등록
      * @param rq
      * @return
      */
@@ -115,7 +115,7 @@ public class TodoController {
 
 
     /**
-     * Todo 단건 상세 조회
+     * Todo_ 단건 상세 조회
      * @param idx
      * @return
      */

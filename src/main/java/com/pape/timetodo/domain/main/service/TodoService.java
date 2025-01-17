@@ -52,7 +52,7 @@ public class TodoService {
     private final UserUtil userUtil;
     
     /**
-     * Todo 리스트 추가, Category와 Users정보 확인
+     * TODO_ 리스트 추가, Category와 Users정보 확인
      * @param rq
      * @return
      */
@@ -90,7 +90,7 @@ public class TodoService {
     }
 
     /**
-     * 홈화면 :: Todo데이터 조회 D-day Todo, Category Todo
+     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_
      * @return
      */
     @Transactional(readOnly = true)
@@ -224,7 +224,7 @@ public class TodoService {
     }
 
     /**
-     * 개인 카테고리 및 투두 조회
+     * 개인 카테고리 및 TODO_ 조회
      * @param usersEntity
      * @return
      */
@@ -291,7 +291,7 @@ public class TodoService {
     }
 
     /**
-     * TodoData Delete
+     * TODO_ 데이터 삭제
      * @param idx
      * @return DB에 데이터가 미존재해도 TRUE
      */
@@ -316,7 +316,7 @@ public class TodoService {
     }
 
     /**
-     * TODO데이터 업데이트
+     * TODO_ 데이터 업데이트
      * @param rq
      */
     @Transactional
@@ -331,7 +331,7 @@ public class TodoService {
     }
 
     /**
-     * 투두 시간기록 등록
+     * TODO_ 시간기록 등록
      * @param rq
      */
     @Transactional
@@ -369,7 +369,7 @@ public class TodoService {
     }
 
     /**
-     * 투두 상세 조회
+     * TODO_ 상세 조회
      * @param idx
      * @return
      */
