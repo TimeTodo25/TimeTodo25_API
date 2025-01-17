@@ -48,6 +48,7 @@ CREATE TABLE `TODO` (
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   `DELETE_DT` datetime(6) DEFAULT NULL COMMENT '삭제일시',
   `DELETED` bit(1) NOT NULL COMMENT '삭제 여부',
+  `TOTAL_TM` time(6) NOT NULL COMMENT '해당 TODO 총 시간',
   PRIMARY KEY (`IDX`),
   KEY `FKou3p1e4wro012h0cpjigl6tw3` (`CATEGORY_IDX`),
   KEY `FK6l1up26vvsa5juhluisme9kvy` (`USERNAME`),

@@ -44,6 +44,8 @@ public class QTodoEntity extends EntityPathBase<TodoEntity> {
 
     public final ListPath<TodoTimerHistoryEntity, QTodoTimerHistoryEntity> todoTimerHistoryEntities = this.<TodoTimerHistoryEntity, QTodoTimerHistoryEntity>createList("todoTimerHistoryEntities", TodoTimerHistoryEntity.class, QTodoTimerHistoryEntity.class, PathInits.DIRECT2);
 
+    public final TimePath<java.time.LocalTime> totalTm = createTime("totalTm", java.time.LocalTime.class);
+
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
 
     public final QUsersEntity usersEntity;
