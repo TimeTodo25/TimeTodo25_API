@@ -28,6 +28,8 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public final StringPath cycleValue = createString("cycleValue");
 
+    public final DateTimePath<java.time.LocalDateTime> deleteDt = createDateTime("deleteDt", java.time.LocalDateTime.class);
+
     public final DatePath<java.time.LocalDate> endDt = createDate("endDt", java.time.LocalDate.class);
 
     public final NumberPath<Long> idx = createNumber("idx", Long.class);
@@ -36,7 +38,9 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public final DatePath<java.time.LocalDate> startDt = createDate("startDt", java.time.LocalDate.class);
 
-    public final QTodoEntity todoEntity;
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
+
+    public final ListPath<TodoEntity, QTodoEntity> todoEntities = this.<TodoEntity, QTodoEntity>createList("todoEntities", TodoEntity.class, QTodoEntity.class, PathInits.DIRECT2);
 
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
 
@@ -60,7 +64,6 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public QRoutineEntity(Class<? extends RoutineEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.todoEntity = inits.isInitialized("todoEntity") ? new QTodoEntity(forProperty("todoEntity"), inits.get("todoEntity")) : null;
         this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
     }
 

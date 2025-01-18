@@ -85,6 +85,9 @@ public class UsersEntity implements UserDetails{
     private List<TodoEntity> todoEntities;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    private List<RoutineEntity> routineEntity;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
     private List<CategoryEntity> categoryEntities;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id.username")

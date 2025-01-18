@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class RegisterRoutineRS {
 
-    private Long idx; // Routine or Todo의 IDX ..왜?
+    private Long idx; // Routine IDX
 
     private String cycleType;
 
