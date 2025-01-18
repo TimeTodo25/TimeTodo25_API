@@ -3,7 +3,6 @@ package com.pape.timetodo.domain.main.service;
 import com.pape.timetodo.domain.main.model.DdayTodoModel;
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
-import com.pape.timetodo.domain.main.model.dday.RegisterDayRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
 import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
@@ -47,8 +46,6 @@ public class TodoRoutineService {
     private final RoutineRepository routineRepository;
 
     private final TodoTimerHistoryRepository todoTimerHistoryRepository;
-
-    private final DdayRepository ddayRepository;
 
     private final UserUtil userUtil;
     
@@ -604,21 +601,6 @@ public class TodoRoutineService {
         if(routineEntity == null) return;
 
         routineRepository.delete(routineEntity);
-    }
-
-    @Transactional
-    public void registerDday(RegisterDayRQ rq) {
-
-        UsersEntity usersEntity = userUtil.getUsersEntity();
-
-        DdayEntity ddayEntity = DdayEntity.builder()
-            .content(rq.getContent())
-            .targetDt(rq.getTargetDt())
-            .targetDelYn(rq.getTargetDelYn())
-            .usersEntity(usersEntity)
-            .build();
-
-        ddayRepository.save(ddayEntity);
     }
         
     private TodoEntity getMyTodoData(Long idx){

@@ -1,6 +1,5 @@
 package com.pape.timetodo.domain.main.controller;
 
-import com.pape.timetodo.domain.main.model.dday.RegisterDayRQ;
 import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.service.TodoRoutineService;
 import com.pape.timetodo.global.exception.AppException;
@@ -124,17 +123,4 @@ public class TodoController {
         return ResponseEntity.ok().body(result);
     }
 
-    /**
-     * 디데이 등록
-     * @param rq
-     * @return
-     */
-    @PostMapping("/register/d-day")
-    @Operation(summary = "디데이 등록", description = "디데이를 등록합니다.")
-    public ResponseEntity<Void> registerDday(@Valid @RequestBody RegisterDayRQ rq){
-
-        todoRoutineService.registerDday(rq);
-
-        return ResponseEntity.ok().build();
-    }
 }
