@@ -54,10 +54,6 @@ public class CategoryService {
 
         CreateCategoryRS result = new CreateCategoryRS();
         result.setCategoryIdx(categoryEntity.getIdx());
-        result.setCategoryTitle(categoryEntity.getTitle());
-        result.setPublicStatus(categoryEntity.getPublicStatus());
-        result.setMainColor(categoryEntity.getMainColor());
-        result.setCreateDt(categoryEntity.getCreateDt());
         result.setUpdateDt(categoryEntity.getUpdateDt());
 
         return result;
