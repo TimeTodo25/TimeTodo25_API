@@ -1,5 +1,6 @@
 package com.pape.timetodo.global.jpa.entity;
 
+import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -82,5 +83,6 @@ public class TodoEntity {
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 }

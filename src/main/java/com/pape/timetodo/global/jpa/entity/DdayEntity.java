@@ -1,24 +1,15 @@
 package com.pape.timetodo.global.jpa.entity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.Comment;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import com.pape.timetodo.global.constant.StatusType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "D_DAY")
@@ -54,6 +45,14 @@ public class DdayEntity {
     @Comment(value = "수정일시")
     private LocalDateTime updateDt;
 
+    @Column(name = "DELETE_DT", nullable = true)
+    @Comment(value = "삭제일시")
+    private LocalDateTime deleteDt; // 삭제일시
+
+    @Column(name = "STATUS", nullable = false)
+    @Comment(value = "상태")
+    private Character status; // 상태 - 삭제여부 등
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
     @Comment(value = "등록유저")
@@ -64,5 +63,6 @@ public class DdayEntity {
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 }
