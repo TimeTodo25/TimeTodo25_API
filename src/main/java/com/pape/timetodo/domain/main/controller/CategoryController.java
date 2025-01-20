@@ -32,30 +32,30 @@ public class CategoryController {
 
     /**
      * 카테고리 추가
-     * @param rq
-     * @return
+     * @param rq CreateCategoryRQ
+     * @return CreateCategoryRS
      */
     @PostMapping("/create")
     @Operation(summary = "카테고리 추가", description = "카테고리를 추가합니다.")
     public ResponseEntity<CreateCategoryRS> createCategory(@Valid @RequestBody CreateCategoryRQ rq){
 
-        categoryService.createCategory(rq);
+        CreateCategoryRS result = categoryService.createCategory(rq);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(result);
     }
 
     /**
      * 카테고리 수정
-     * @param rq
-     * @return
+     * @param rq UpdateCategoryRQ
+     * @return UpdateCategoryRS
      */
     @PutMapping("/update")
     @Operation(summary = "카테고리 수정", description = "카테고리를 수정합니다.")
     public ResponseEntity<UpdateCategoryRS> updateCategory(@Valid @RequestBody UpdateCategoryRQ rq){
 
-        categoryService.updateCategory(rq);
+        UpdateCategoryRS result = categoryService.updateCategory(rq);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(result);
     }
 
     /**
@@ -70,9 +70,5 @@ public class CategoryController {
 
         return ResponseEntity.ok().body(result);
     }
-    
-    
-
-    
 
 }

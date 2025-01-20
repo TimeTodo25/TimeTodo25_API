@@ -31,8 +31,8 @@ public class CategoryService {
     
     /**
      * 카테고리 추가
-     * @param rq
-     * @return
+     * @param rq CreateCategoryRQ
+     * @return CreateCategoryRS
      */
     @Transactional
     public CreateCategoryRS createCategory(@Valid CreateCategoryRQ rq) {
@@ -61,7 +61,7 @@ public class CategoryService {
 
     /**
      * 내 카테고리 조회
-     * @return
+     * @return MyCategoryRS
      */
     public MyCategoryRS getMyCategory() {
 
@@ -87,6 +87,11 @@ public class CategoryService {
         return result;
     }
 
+    /**
+     * 카테고리 수정
+     * @param rq UpdateCategoryRQ
+     * @return UpdateCategoryRS
+     */
     @Transactional
     public UpdateCategoryRS updateCategory(UpdateCategoryRQ rq) {
 
