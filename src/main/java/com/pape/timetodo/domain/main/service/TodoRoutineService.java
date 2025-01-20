@@ -159,9 +159,20 @@ public class TodoRoutineService {
 
         routineEntity = routineRepository.save(routineEntity);
 
+        List<TodoEntity> todoList = routineEntity.getTodoEntities();
+
         RegisterRoutineRS result = new RegisterRoutineRS();
         result.setIdx(routineEntity.getIdx());
         result.setUpdateDt(routineEntity.getUpdateDt());
+        result.setTodoList(todoList.stream().map(todo -> {
+            GetTodoModel model = new GetTodoModel();
+            model.setIdx(todo.getIdx());
+            model.setContent(todo.getContent());
+            model.setTargetDate(todo.getTargetDate());
+            model.setStartTargetTm(todo.getStartTargetTm());
+            model.setEndTargetTm(todo.getEndTargetTm());
+            return model;
+        }).collect(Collectors.toList()));
 
         return result;
     }
@@ -203,10 +214,21 @@ public class TodoRoutineService {
             .build();
 
         routineEntity = routineRepository.save(routineEntity);
+
+        List<TodoEntity> todoList = routineEntity.getTodoEntities();
         
         RegisterRoutineRS result = new RegisterRoutineRS();
         result.setIdx(routineEntity.getIdx());
         result.setUpdateDt(routineEntity.getUpdateDt());
+        result.setTodoList(todoList.stream().map(todo -> {
+            GetTodoModel model = new GetTodoModel();
+            model.setIdx(todo.getIdx());
+            model.setContent(todo.getContent());
+            model.setTargetDate(todo.getTargetDate());
+            model.setStartTargetTm(todo.getStartTargetTm());
+            model.setEndTargetTm(todo.getEndTargetTm());
+            return model;
+        }).collect(Collectors.toList()));
 
         return result;
     }

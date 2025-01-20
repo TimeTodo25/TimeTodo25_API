@@ -1,9 +1,11 @@
 package com.pape.timetodo.domain.main.model.routhin;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pape.timetodo.domain.main.model.GetTodoModel;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class RegisterRoutineRS {
@@ -13,6 +15,6 @@ public class RegisterRoutineRS {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateDt;
 
-    // private List<GetTodoModel> todoModelList;
+    private List<GetTodoModel> todoList;
 
 }
