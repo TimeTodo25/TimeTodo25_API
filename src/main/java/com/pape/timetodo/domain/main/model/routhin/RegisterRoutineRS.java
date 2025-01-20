@@ -10,14 +10,9 @@ public class RegisterRoutineRS {
 
     private Long idx; // Routine IDX
 
-    private String cycleType;
-
-    private String rm;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createDt;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateDt;
+
+    // private List<GetTodoModel> todoModelList;
 
 }

@@ -161,9 +161,6 @@ public class TodoRoutineService {
 
         RegisterRoutineRS result = new RegisterRoutineRS();
         result.setIdx(routineEntity.getIdx());
-        result.setCycleType(routineEntity.getCycleType().name());
-        result.setRm(routineEntity.getRm());
-        result.setCreateDt(routineEntity.getCreateDt());
         result.setUpdateDt(routineEntity.getUpdateDt());
 
         return result;
@@ -209,9 +206,6 @@ public class TodoRoutineService {
         
         RegisterRoutineRS result = new RegisterRoutineRS();
         result.setIdx(routineEntity.getIdx());
-        result.setCycleType(routineEntity.getCycleType().name());
-        result.setRm(routineEntity.getRm());
-        result.setCreateDt(routineEntity.getCreateDt());
         result.setUpdateDt(routineEntity.getUpdateDt());
 
         return result;
@@ -545,7 +539,8 @@ public class TodoRoutineService {
 
     /**
      * 루틴 수정
-     * @param rq
+     * @param rq UpdateRoutineRQ
+     * @return UpdateRoutineRS
      */
     @Transactional
     public UpdateRoutineRS updateRoutine(UpdateRoutineRQ rq) {
