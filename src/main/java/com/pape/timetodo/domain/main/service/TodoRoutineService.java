@@ -440,6 +440,9 @@ public class TodoRoutineService {
         if(rq.getStartTargetTm() != null) todoEntity.setStartTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntity.setEndTargetTm(rq.getEndTargetTm());
 
+        // 투두 개별 수정하면 기존 루틴에서 제외됨 // TODO: 카테고리 수정이나, 상태 변경의 경우에는 속한 루틴 값 유지해야 함
+        if(todoEntity.getRoutineEntity() != null) todoEntity.setRoutineEntity(null);
+
         todoEntity.setUpdateDt(LocalDateTime.now());
         todoRepository.save(todoEntity);
 
