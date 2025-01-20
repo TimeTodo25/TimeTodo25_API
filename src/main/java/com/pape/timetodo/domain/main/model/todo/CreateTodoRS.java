@@ -1,17 +1,13 @@
 package com.pape.timetodo.domain.main.model.todo;
 
-import java.time.LocalDateTime;
-
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class CreateTodoRS {
 
-    private String content;
-
-    private String categoryTitle;
-
-    private LocalDateTime createDt;
+    private Long todoIdx;
 
     private LocalDateTime updateDt;
 }

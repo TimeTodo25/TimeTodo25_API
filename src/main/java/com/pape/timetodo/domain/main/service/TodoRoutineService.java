@@ -52,8 +52,8 @@ public class TodoRoutineService {
     
     /**
      * TODO_ 리스트 추가, Category와 Users정보 확인
-     * @param rq
-     * @return
+     * @param rq CreateTodoRQ
+     * @return CreateTodoRS
      */
     @Transactional
     public CreateTodoRS createTodo(@Valid CreateTodoRQ rq) {
@@ -78,9 +78,7 @@ public class TodoRoutineService {
         todoEntity = todoRepository.save(todoEntity);
         
         CreateTodoRS result = new CreateTodoRS();
-        result.setContent(todoEntity.getContent());
-        result.setCategoryTitle(todoEntity.getCategoryEntity().getTitle());
-        result.setCreateDt(todoEntity.getCreateDt());
+        result.setTodoIdx(todoEntity.getIdx());
         result.setUpdateDt(todoEntity.getUpdateDt());
 
         return result;
@@ -109,9 +107,7 @@ public class TodoRoutineService {
         todoEntity = todoRepository.save(todoEntity);
 
         CreateTodoRS result = new CreateTodoRS();
-        result.setContent(todoEntity.getContent());
-        result.setCategoryTitle(todoEntity.getCategoryEntity().getTitle());
-        result.setCreateDt(todoEntity.getCreateDt());
+        result.setTodoIdx(todoEntity.getIdx());
         result.setUpdateDt(todoEntity.getUpdateDt());
 
         return result;
@@ -331,7 +327,7 @@ public class TodoRoutineService {
             newTodo.setStartTargetTm(startTargetTm);
             newTodo.setEndTargetTm(endTargetTm);
 
-            createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+            CreateTodoRS todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
         }
 
         // 날짜 겹치는 기존의 TodoEntity 삭제

@@ -25,15 +25,16 @@ public class TodoController {
 
     /**
      * Todo_ 등록
-     * @return
+     * @param rq CreateTodoRQ
+     * @return CreateTodoRS
      */
     @PostMapping("/create")
     @Operation(summary = "투두 등록", description = "투두정보를 등록합니다.")
     public ResponseEntity<CreateTodoRS> createTodo(@Valid @RequestBody CreateTodoRQ rq){
 
-        todoRoutineService.createTodo(rq);
+        CreateTodoRS result = todoRoutineService.createTodo(rq);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(result);
     }
 
     /**
