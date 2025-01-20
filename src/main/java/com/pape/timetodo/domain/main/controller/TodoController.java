@@ -37,17 +37,17 @@ public class TodoController {
         return ResponseEntity.ok().body(result);
     }
 
-    /**
-     * 홈화면 :: 오늘 TodoList 조회
-     */
-    @GetMapping("/home")
-    @Operation(summary = "홈화면 데이터 조회[투두, 디데이]", description = "홈화면 데이터를 조회합니다.")
-    public ResponseEntity<GetHomeTodoRS> getHomeTodo(@Valid GetHomeTodoRQ rq){
-
-        GetHomeTodoRS result = todoRoutineService.getHomeTodo(rq);
-
-        return ResponseEntity.ok().body(result);
-    }
+//    /**
+//     * 홈화면 :: 오늘 TodoList 조회
+//     */
+//    @GetMapping("/home")
+//    @Operation(summary = "홈화면 데이터 조회[투두, 디데이]", description = "홈화면 데이터를 조회합니다.")
+//    public ResponseEntity<GetHomeTodoRS> getHomeTodo(@Valid GetHomeTodoRQ rq){
+//
+//        GetHomeTodoRS result = todoRoutineService.getHomeTodo(rq);
+//
+//        return ResponseEntity.ok().body(result);
+//    }
 
     /**
      * Todo_ 삭제

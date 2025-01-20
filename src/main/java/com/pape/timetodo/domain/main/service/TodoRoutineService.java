@@ -1,6 +1,5 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.DdayTodoModel;
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
@@ -109,24 +108,24 @@ public class TodoRoutineService {
         return todoEntity;
     }
 
-    /**
-     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_ // TODO: 삭제하라고? - 디코 확인!
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public GetHomeTodoRS getHomeTodo(GetHomeTodoRQ rq) {
-
-        UsersEntity usersEntity = userUtil.getUsersEntity();
-
-        List<GetCategoryModel> categoryList = this.getMyCategoryList(usersEntity, rq);
-        List<DdayTodoModel> intervalDayTodoModels = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity);
-
-        GetHomeTodoRS result = new GetHomeTodoRS();
-        result.setCategoryList(categoryList);
-        result.setIntervalDayTodoList(intervalDayTodoModels);
-
-        return result;
-    }
+//    /**
+//     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_ // TODO: 삭제하라고? - 디코 확인!
+//     * @return
+//     */
+//    @Transactional(readOnly = true)
+//    public GetHomeTodoRS getHomeTodo(GetHomeTodoRQ rq) {
+//
+//        UsersEntity usersEntity = userUtil.getUsersEntity();
+//
+//        List<GetCategoryModel> categoryList = this.getMyCategoryList(usersEntity, rq);
+//        List<DdayTodoModel> intervalDayTodoModels = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity);
+//
+//        GetHomeTodoRS result = new GetHomeTodoRS();
+//        result.setCategoryList(categoryList);
+//        result.setIntervalDayTodoList(intervalDayTodoModels);
+//
+//        return result;
+//    }
 
     /**
      * 새로운 루틴 등록 (투두 목록 생성)
