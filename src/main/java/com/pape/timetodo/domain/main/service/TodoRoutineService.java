@@ -1,16 +1,16 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.DdayTodoModel;
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
-import com.pape.timetodo.domain.main.model.dday.RegisterDayRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
 import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
+import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRS;
 import com.pape.timetodo.domain.main.model.todo.*;
-import com.pape.timetodo.domain.main.model.todo.GetTodoDetailRS.TimerHistory;
+import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
+import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.*;
@@ -31,11 +31,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class TodoService {
+public class TodoRoutineService {
 
     private final TodoRepository todoRepository;
 
@@ -47,14 +48,12 @@ public class TodoService {
 
     private final TodoTimerHistoryRepository todoTimerHistoryRepository;
 
-    private final DdayRepository ddayRepository;
-
     private final UserUtil userUtil;
     
     /**
-     * Todo 리스트 추가, Category와 Users정보 확인
-     * @param rq
-     * @return
+     * TODO_ 리스트 추가, Category와 Users정보 확인
+     * @param rq CreateTodoRQ
+     * @return CreateTodoRS
      */
     @Transactional
     public CreateTodoRS createTodo(@Valid CreateTodoRQ rq) {
@@ -69,8 +68,7 @@ public class TodoService {
             .content(rq.getContent())
             .categoryEntity(categoryEntity)
             .usersEntity(usersEntity)
-            .targetDate(rq.getDate())
-            .deleted(false);
+            .targetDate(rq.getDate());
 
         if(rq.getStartTargetTm() != null) todoEntityBuilder.startTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntityBuilder.endTargetTm(rq.getEndTargetTm());
@@ -80,109 +78,165 @@ public class TodoService {
         todoEntity = todoRepository.save(todoEntity);
         
         CreateTodoRS result = new CreateTodoRS();
-        result.setContent(todoEntity.getContent());
-        result.setCategoryTitle(todoEntity.getCategoryEntity().getTitle());
-        result.setCreateDt(todoEntity.getCreateDt());
+        result.setTodoIdx(todoEntity.getIdx());
         result.setUpdateDt(todoEntity.getUpdateDt());
 
         return result;
     }
 
     /**
-     * 홈화면 :: Todo데이터 조회 D-day Todo, Category Todo
-     * @return
+     * TODO_ 추가, Routine으로 인해 생성되는 Todo라 로직이 간소해져서 분리함
+     * @param rq CreateTodoRQ
+     * @return CreateTodoRS
      */
-    @Transactional(readOnly = true)
-    public GetHomeTodoRS getHomeTodo(GetHomeTodoRQ rq) {
+    // @Transactional // TODO: 같은 클래스의 내부 메서드라 트랜잭션이 적용 안된다고 함. 고민 필요.
+    public TodoEntity createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity) {
+
+        TodoEntity.TodoEntityBuilder todoEntityBuilder = TodoEntity.builder()
+                .content(rq.getContent())
+                .categoryEntity(categoryEntity)
+                .usersEntity(usersEntity)
+                .targetDate(rq.getDate())
+                .status(StatusType.NORMAL.getValue());
+
+        if(rq.getStartTargetTm() != null) todoEntityBuilder.startTargetTm(rq.getStartTargetTm());
+        if(rq.getEndTargetTm() != null) todoEntityBuilder.endTargetTm(rq.getEndTargetTm());
+
+        TodoEntity todoEntity = todoEntityBuilder.build();
+
+        todoEntity = todoRepository.save(todoEntity);
+
+        return todoEntity;
+    }
+
+//    /**
+//     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_ // TODO: 삭제하라고? - 디코 확인!
+//     * @return
+//     */
+//    @Transactional(readOnly = true)
+//    public GetHomeTodoRS getHomeTodo(GetHomeTodoRQ rq) {
+//
+//        UsersEntity usersEntity = userUtil.getUsersEntity();
+//
+//        List<GetCategoryModel> categoryList = this.getMyCategoryList(usersEntity, rq);
+//        List<DdayTodoModel> intervalDayTodoModels = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity);
+//
+//        GetHomeTodoRS result = new GetHomeTodoRS();
+//        result.setCategoryList(categoryList);
+//        result.setIntervalDayTodoList(intervalDayTodoModels);
+//
+//        return result;
+//    }
+
+    /**
+     * 새로운 루틴 등록 (투두 목록 생성)
+     * @param rq RegisterRoutineRQ
+     * @return RegisterRoutineRS
+     */
+    @Transactional
+    public RegisterRoutineRS createRoutine(RegisterRoutineRQ rq) {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        List<GetCategoryModel> categoryList = this.getMyCategoryList(usersEntity, rq);
-        List<DdayTodoModel> intervalDayTodoModels = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity);
+        CategoryEntity categoryEntity = categoryRepository.findByIdxAndUsersEntity(rq.getCategoryIdx(), usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.NON_VALID_PARAMETER, "잘못된 카테고리 IDX"));
 
-        GetHomeTodoRS result = new GetHomeTodoRS();
-        result.setCategoryList(categoryList);
-        result.setIntervalDayTodoList(intervalDayTodoModels);
+        String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue()); // TODO: 이게 왜 필요하지..?
+
+        StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
+
+        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
+
+        RoutineEntity routineEntity = RoutineEntity.builder()
+                .cycleType(rq.getCycleType())
+                .cycleValue(cycleValue.toString())
+                .rm(rm)
+                .todoEntities(todoEntityList)
+                .usersEntity(usersEntity)
+                .startDt(rq.getStartDt())
+                .endDt(rq.getEndDt())
+                .build();
+
+        routineEntity = routineRepository.save(routineEntity);
+
+        List<TodoEntity> todoList = routineEntity.getTodoEntities();
+
+        RegisterRoutineRS result = new RegisterRoutineRS();
+        result.setIdx(routineEntity.getIdx());
+        result.setUpdateDt(routineEntity.getUpdateDt());
+        result.setTodoList(todoList.stream().map(todo -> {
+            GetTodoModel model = new GetTodoModel();
+            model.setIdx(todo.getIdx());
+            model.setContent(todo.getContent());
+            model.setTargetDate(todo.getTargetDate());
+            model.setStartTargetTm(todo.getStartTargetTm());
+            model.setEndTargetTm(todo.getEndTargetTm());
+            return model;
+        }).collect(Collectors.toList()));
 
         return result;
     }
 
     /**
-     * 루틴 등록
-     * @param rq
-     * @return
+     * 기존 투두 -> 루틴 등록 (투두 복사 목록화)
+     * @param rq RegisterRoutineRQ
+     * @return RegisterRoutineRS
      */
     @Transactional
     public RegisterRoutineRS registerRoutine(RegisterRoutineRQ rq) {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
+        CategoryEntity categoryEntity = categoryRepository.findByIdxAndUsersEntity(rq.getCategoryIdx(), usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.NON_VALID_PARAMETER, "잘못된 카테고리 IDX"));
+
         // 실제로 있는 TodoData인지 그리고 자기 자신 TodoData인지 확인
         TodoEntity todoEntity = todoRepository.findByIdxAndUsersEntity(rq.getTodoIdx(), usersEntity)
             .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
 
         // 루틴등록을 중복으로 했는지 확인
-        Boolean duplication = routineRepository.findByTodoEntity(todoEntity)
-            .isPresent();
-            
-        if(duplication) throw new AppException(ExceptionCode.DATA_DUPLICATE, "이미 루틴으로 등록되어있습니다.");
+        if(todoEntity.getRoutineEntity() != null) throw new AppException(ExceptionCode.DATA_DUPLICATE, "이미 루틴으로 등록되어있습니다.");
 
         String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue());
 
-        StringBuilder cycleValue = new StringBuilder();
+        StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
 
-        // 루틴 사이클 지정일이 있을 시
-        if(rq.getCycleValue() != null){
-            rq.getCycleValue().forEach(value -> {
-                
-                switch (rq.getCycleType()) {
-                    case EVERY_DAY:
-                        break;
-                    case EVERY_MONTH:
-                        if(!(value >= 1 && 31 >= value)) {
-                            throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "일 지정은 1~31까지 숫자를 넣어야 합니다.");
-                        } 
-
-                        break;
-                    case EVERY_WEEK:
-                        DayWeekType dayWeek = DayWeekType.fromValue(value.intValue());
-                        if(dayWeek == null){
-                            throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "요일은 1~7까지 숫자를 넣어야 합니다.");
-                        }
-                        break;
-                }    
-                cycleValue.append(value);
-                cycleValue.append(",");
-            });
-            cycleValue.deleteCharAt(cycleValue.length() - 1);
-        }
+        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
 
         RoutineEntity routineEntity = RoutineEntity.builder()
             .cycleType(rq.getCycleType())
             .cycleValue(cycleValue.toString())
             .rm(rm)
-            .todoEntity(todoEntity)
+            .todoEntities(todoEntityList)
             .usersEntity(usersEntity)
             .startDt(rq.getStartDt())
             .endDt(rq.getEndDt())
             .build();
 
         routineEntity = routineRepository.save(routineEntity);
+
+        List<TodoEntity> todoList = routineEntity.getTodoEntities();
         
         RegisterRoutineRS result = new RegisterRoutineRS();
         result.setIdx(routineEntity.getIdx());
-        result.setCycleType(routineEntity.getCycleType().name());
-        result.setRm(routineEntity.getRm());
-        result.setCreateDt(routineEntity.getCreateDt());
         result.setUpdateDt(routineEntity.getUpdateDt());
+        result.setTodoList(todoList.stream().map(todo -> {
+            GetTodoModel model = new GetTodoModel();
+            model.setIdx(todo.getIdx());
+            model.setContent(todo.getContent());
+            model.setTargetDate(todo.getTargetDate());
+            model.setStartTargetTm(todo.getStartTargetTm());
+            model.setEndTargetTm(todo.getEndTargetTm());
+            return model;
+        }).collect(Collectors.toList()));
 
         return result;
     }
 
     /**
      * 루틴 타입이 요일 지정일 떄, value가 1~7 인지 체크
-     * @param cycleType
-     * @param cycleValue
+     * @param cycleType CycleType
+     * @param cycleValue List<Byte>
      * @return RM 비고 데이터 조회
      */
     private String validationRoutineCycleType(CycleType cycleType, List<Byte> cycleValue){
@@ -223,7 +277,87 @@ public class TodoService {
     }
 
     /**
-     * 개인 카테고리 및 투두 조회
+     * 루틴 사이클 stringbuilder로 저장
+     * @param cycleType CycleType
+     * @param cycleValueList List<Byte>
+     * @return StringBuilder
+     */
+    private StringBuilder getCycleValueAsStr(CycleType cycleType, List<Byte> cycleValueList) {
+
+        StringBuilder cycleValue = new StringBuilder();
+        // 루틴 사이클 지정일이 있을 시 (everyday는 value 없음)
+        if(cycleValueList != null){
+            cycleValueList.forEach(value -> {
+
+                switch (cycleType) {
+                    case EVERY_DAY:
+                        break;
+                    case EVERY_MONTH:
+                        if(!(value >= 1 && 31 >= value)) {
+                            throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "일 지정은 1~31까지 숫자를 넣어야 합니다.");
+                        }
+
+                        break;
+                    case EVERY_WEEK:
+                        DayWeekType dayWeek = DayWeekType.fromValue(value.intValue());
+                        if(dayWeek == null){
+                            throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "요일은 1~7까지 숫자를 넣어야 합니다.");
+                        }
+                        break;
+                }
+                cycleValue.append(value);
+                cycleValue.append(",");
+            });
+            cycleValue.deleteCharAt(cycleValue.length() - 1);
+        }
+        return  cycleValue;
+    }
+
+    /**
+     * 루틴 생성 및 등록으로 인한 복수의 투두 생성
+     * @param rq RegisterRoutineRQ
+     * @param usersEntity UsersEntity
+     * @param categoryEntity CategoryEntity
+     * @return List<TodoEntity>
+     */
+    private List<TodoEntity> createTodoList(RegisterRoutineRQ rq, UsersEntity usersEntity, CategoryEntity categoryEntity) {
+        List<TodoEntity> todoEntityList = new ArrayList<>();
+
+        // getter 잦은 호출 피하기 위해 각 변수 선언 및 할당
+        String content = rq.getContent();
+        Long categoryIdx = rq.getCategoryIdx();
+        LocalTime startTargetTm = rq.getStartTargetTm();
+        LocalTime endTargetTm = rq.getEndTargetTm();
+
+        // 날짜 마다 Todo_ 데이터 추가
+        for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+
+            CreateTodoRQ newTodo = new CreateTodoRQ();
+            newTodo.setContent(content);
+            newTodo.setCategoryIdx(categoryIdx);
+            newTodo.setDate(date);
+            newTodo.setStartTargetTm(startTargetTm);
+            newTodo.setEndTargetTm(endTargetTm);
+
+            TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+            todoEntityList.add(todo);
+        }
+
+        // 날짜 겹치는 기존의 TodoEntity 삭제
+        if(rq.getTodoIdx() != null) {
+            Optional<TodoEntity> oldTodo = todoRepository.findById(rq.getTodoIdx());
+            if(oldTodo.isPresent() && (oldTodo.get().getTargetDate().isEqual(rq.getStartDt()) || oldTodo.get().getTargetDate().isAfter(rq.getStartDt())) &&
+            (oldTodo.get().getTargetDate().isEqual(rq.getEndDt()) || oldTodo.get().getTargetDate().isBefore(rq.getEndDt()))) {
+                todoRepository.delete(oldTodo.get());
+            }
+            // _todo.ifPresent(todoRepository::delete); // TODO: 그냥 기존 투두는 날짜 겹치든 말든 없애는 게 낫지 않나 논의 필요
+        }
+
+        return todoEntityList;
+    }
+
+    /**
+     * 개인 카테고리 및 TODO_ 조회
      * @param usersEntity
      * @return
      */
@@ -290,12 +424,11 @@ public class TodoService {
     }
 
     /**
-     * TodoData Delete
+     * TODO_ 데이터 삭제
      * @param idx
-     * @return DB에 데이터가 미존재해도 TRUE
      */
     @Transactional
-    public Boolean deleteTodo(Long idx) {
+    public void deleteTodo(Long idx) {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
@@ -305,21 +438,17 @@ public class TodoService {
 
             TodoEntity todoEntity = todoEntityWrapper.get();
             todoEntity.setDeleteDt(LocalDateTime.now());
-            todoEntity.setDeleted(true);
-
-            return true;
-        } else { // Data가 없을 경우 TRUE 반환
-
-            return true;
+            todoEntity.setStatus(StatusType.DELETED.getValue());
         }
     }
 
     /**
-     * TODO데이터 업데이트
-     * @param rq
+     * TODO_ 데이터 업데이트
+     * @param rq UpdateTodoRQ
+     * @return UpdateTodoRS
      */
     @Transactional
-    public void updateTodo(UpdateTodoRQ rq) {
+    public UpdateTodoRS updateTodo(UpdateTodoRQ rq) {
 
         TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
 
@@ -327,13 +456,26 @@ public class TodoService {
         if(rq.getTargetDate() != null) todoEntity.setTargetDate(rq.getTargetDate());
         if(rq.getStartTargetTm() != null) todoEntity.setStartTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntity.setEndTargetTm(rq.getEndTargetTm());
+
+        // 투두 개별 수정하면 기존 루틴에서 제외됨 // TODO: 카테고리 수정이나, 상태 변경의 경우에는 속한 루틴 값 유지해야 함
+        if(todoEntity.getRoutineEntity() != null) todoEntity.setRoutineEntity(null);
+
+        todoEntity.setUpdateDt(LocalDateTime.now());
+        todoRepository.save(todoEntity);
+
+        UpdateTodoRS result = new UpdateTodoRS();
+        result.setUpdateDt(todoEntity.getUpdateDt());
+
+        return result;
     }
 
     /**
-     * 투두 시간기록 등록
-     * @param rq
+     * TODO_ 시간기록 등록
+     * @param rq RegistTodoTimerRQ
+     * @return RegistTodoTimerRS
      */
-    public void registTodoTimer(RegistTodoTimerRQ rq) {
+    @Transactional
+    public RegistTodoTimerRS registTodoTimer(RegistTodoTimerRQ rq) {
         TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
@@ -341,7 +483,7 @@ public class TodoService {
         for(TimeData time: rq.getTimeDatas()){
 
             Duration duration = Duration.between(time.getStartDt(), time.getEndDt());
-            Long totalSecond = duration.toSeconds();
+            long totalSecond = duration.toSeconds();
 
             TodoTimerHistoryEntity timerEntity = TodoTimerHistoryEntity.builder()
                 .historyStartDt(time.getStartDt())
@@ -352,17 +494,51 @@ public class TodoService {
 
             timerHistoryEntities.add(timerEntity);
         }
-        
+
         todoTimerHistoryRepository.saveAll(timerHistoryEntities);
+
+        List<Long> timerIdxList = timerHistoryEntities.stream()
+                .map(TodoTimerHistoryEntity::getIdx)
+                .collect(Collectors.toList());
+
+        RegistTodoTimerRS result = new RegistTodoTimerRS();
+        result.setTimerIdxList(timerIdxList);
+        result.setUpdateDt(LocalDateTime.now());
+
+        return result;
     }
 
     /**
-     * 투두 상세 조회
+     * TODO_ 상세 조회
      * @param idx
      * @return
      */
     @Transactional(readOnly = true)
     public GetTodoDetailRS detailTodo(Long idx) {
+
+        TodoEntity todoEntity = this.getMyTodoData(idx);
+
+        LocalTime totalTm = LocalTime.MIN.plus(
+            todoEntity.getTodoTimerHistoryEntities().stream()
+                .map(time -> Duration.between(LocalTime.MIN, time.getTotalTm()))
+                .reduce(Duration.ZERO, Duration::plus)
+            );
+
+        GetTodoDetailRS result = new GetTodoDetailRS();
+        result.setIdx(todoEntity.getIdx());
+        result.setContent(todoEntity.getContent());
+        result.setTotalTm(totalTm);
+
+        return result;
+    }
+
+    /**
+     * TODO_ 타이머 기록 상세 조회
+     * @param idx
+     * @return
+     */
+    @Transactional(readOnly = true)
+    public GetTodoTimerHistoryRs detailTodoTimer(Long idx) {
 
         TodoEntity todoEntity = this.getMyTodoData(idx);
 
@@ -377,16 +553,7 @@ public class TodoService {
             timerHistories.add(node);
         }
 
-        LocalTime totalTm = LocalTime.MIN.plus(
-            todoEntity.getTodoTimerHistoryEntities().stream()
-                .map(time -> Duration.between(LocalTime.MIN, time.getTotalTm()))
-                .reduce(Duration.ZERO, Duration::plus)
-            );
-
-        GetTodoDetailRS result = new GetTodoDetailRS();
-        result.setIdx(todoEntity.getIdx());
-        result.setContent(todoEntity.getContent());
-        result.setTotalTm(totalTm);
+        GetTodoTimerHistoryRs result = new GetTodoTimerHistoryRs();
         result.setTimerHistories(timerHistories);
 
         return result;
@@ -394,15 +561,13 @@ public class TodoService {
 
     /**
      * 루틴 수정
-     * @param rq
+     * @param rq UpdateRoutineRQ
+     * @return UpdateRoutineRS
      */
     @Transactional
-    public void updateRoutine(UpdateRoutineRQ rq) {
+    public UpdateRoutineRS updateRoutine(UpdateRoutineRQ rq) {
 
-        TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
-        RoutineEntity routineEntity = todoEntity.getRoutineEntity();
-
-        if(routineEntity == null) throw new AppException(ExceptionCode.DATA_NOT_FIND);
+        RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
 
         // Cycle 타입 변경
         if(rq.getCycleType() != null) {
@@ -448,15 +613,31 @@ public class TodoService {
             routineEntity.setCycleValue(cycleValue.toString());
         }
 
+        // TODO: 있던 todo 없애야..하는...?
         if(rq.getStartDt() != null) routineEntity.setStartDt(rq.getStartDt());
         if(rq.getEndDt() != null) routineEntity.setEndDt(rq.getEndDt());
-        if(rq.getStartTm() != null) todoEntity.setStartTargetTm(rq.getStartTm());
-        if(rq.getEndTm() != null) todoEntity.setEndTargetTm(rq.getEndTm());
+
+        // 속한 Todo_ 데이터도 시간 변경
+        LocalDateTime now = LocalDateTime.now();
+        if(rq.getStartTm() != null || rq.getEndTm() != null) {
+            LocalTime newStartTm = rq.getStartTm();
+            LocalTime newEndTm = rq.getEndTm();
+            for(TodoEntity todoEntity : routineEntity.getTodoEntities()) {
+                todoEntity.setStartTargetTm(newStartTm);
+                todoEntity.setEndTargetTm(newEndTm);
+                todoEntity.setUpdateDt(now);
+                todoRepository.save(todoEntity);
+            }
+        }
+
+        UpdateRoutineRS result = new UpdateRoutineRS();
+        result.setUpdateDt(now);
+        return result;
     }
 
     /**
-     * 루틴 삭제[물리]
-     * @param idx
+     * 루틴 삭제 [논리 삭제]
+     * @param idx Long
      */
     @Transactional
     public void deleteRoutine(Long idx) {
@@ -465,22 +646,9 @@ public class TodoService {
 
         if(routineEntity == null) return;
 
-        routineRepository.delete(routineEntity);
-    }
-
-    @Transactional
-    public void registerDday(RegisterDayRQ rq) {
-
-        UsersEntity usersEntity = userUtil.getUsersEntity();
-
-        DdayEntity ddayEntity = DdayEntity.builder()
-            .content(rq.getContent())
-            .targetDt(rq.getTargetDt())
-            .targetDelYn(rq.getTargetDelYn())
-            .usersEntity(usersEntity)
-            .build();
-
-        ddayRepository.save(ddayEntity);
+        routineEntity.setDeleteDt(LocalDateTime.now());
+        routineEntity.setStatus(StatusType.DELETED.getValue());
+        routineRepository.save(routineEntity);
     }
         
     private TodoEntity getMyTodoData(Long idx){
@@ -489,6 +657,14 @@ public class TodoService {
 
         return todoRepository.findByIdxAndUsersEntity(idx, usersEntity)
             .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+    }
+
+    private RoutineEntity getMyRoutineData(Long idx){
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        return routineRepository.findByIdxAndUsersEntity(idx, usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
     }
 
 }

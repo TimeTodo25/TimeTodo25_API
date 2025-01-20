@@ -46,6 +46,10 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public final StringPath refreshToken = createString("refreshToken");
 
+    public final ListPath<RoutineEntity, QRoutineEntity> routineEntity = this.<RoutineEntity, QRoutineEntity>createList("routineEntity", RoutineEntity.class, QRoutineEntity.class, PathInits.DIRECT2);
+
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
+
     public final ListPath<TodoEntity, QTodoEntity> todoEntities = this.<TodoEntity, QTodoEntity>createList("todoEntities", TodoEntity.class, QTodoEntity.class, PathInits.DIRECT2);
 
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);

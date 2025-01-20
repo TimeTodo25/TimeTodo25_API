@@ -1,17 +1,16 @@
 package com.pape.timetodo.global.jpa.repository;
 
-import java.util.Optional;
-
+import com.pape.timetodo.global.jpa.entity.RoutineEntity;
+import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.pape.timetodo.global.jpa.entity.RoutineEntity;
-import com.pape.timetodo.global.jpa.entity.TodoEntity;
+import java.util.Optional;
 
 
 @Repository
 public interface RoutineRepository extends JpaRepository<RoutineEntity, Long>{
 
-    Optional<RoutineEntity> findByTodoEntity(TodoEntity todoEntity);
+    Optional<RoutineEntity> findByIdxAndUsersEntity(Long idx, UsersEntity usersEntity);
 
 }

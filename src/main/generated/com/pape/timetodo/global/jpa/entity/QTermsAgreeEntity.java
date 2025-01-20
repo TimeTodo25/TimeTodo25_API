@@ -32,6 +32,8 @@ public class QTermsAgreeEntity extends EntityPathBase<TermsAgreeEntity> {
 
     public final StringPath ip = createString("ip");
 
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
+
     public final QTermsEntity termsEntity;
 
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);

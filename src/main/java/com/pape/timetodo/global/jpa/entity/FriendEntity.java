@@ -1,30 +1,13 @@
 package com.pape.timetodo.global.jpa.entity;
 
+import com.pape.timetodo.global.constant.StatusType;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.Comment;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
-
-import org.hibernate.annotations.Comment;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "FRIEND")
@@ -69,10 +52,15 @@ public class FriendEntity {
     @Comment(value = "삭제일시")
     private LocalDateTime deleteDt;
 
+    @Column(name = "STATUS", nullable = false)
+    @Comment(value = "상태")
+    private Character status;
+
     @PrePersist
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 
 

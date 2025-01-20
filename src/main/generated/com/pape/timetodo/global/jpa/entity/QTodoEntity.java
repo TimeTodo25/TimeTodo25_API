@@ -28,8 +28,6 @@ public class QTodoEntity extends EntityPathBase<TodoEntity> {
 
     public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);
 
-    public final BooleanPath deleted = createBoolean("deleted");
-
     public final DateTimePath<java.time.LocalDateTime> deleteDt = createDateTime("deleteDt", java.time.LocalDateTime.class);
 
     public final TimePath<java.time.LocalTime> endTargetTm = createTime("endTargetTm", java.time.LocalTime.class);
@@ -39,6 +37,8 @@ public class QTodoEntity extends EntityPathBase<TodoEntity> {
     public final QRoutineEntity routineEntity;
 
     public final TimePath<java.time.LocalTime> startTargetTm = createTime("startTargetTm", java.time.LocalTime.class);
+
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
 
     public final DatePath<java.time.LocalDate> targetDate = createDate("targetDate", java.time.LocalDate.class);
 

@@ -8,14 +8,22 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Data
 public class RegisterRoutineRQ {
 
-    @NotNull
     @Schema(description = "투두 IDX", example = "1", implementation = Long.class)
     private Long todoIdx;
+
+    @NotNull
+    @Schema(description = "투두 내용", example = "스웨거UI 문서화해주기", implementation = String.class)
+    private String content;
+
+    @NotNull
+    @Schema(description = "카테고리 IDX", example = "1", implementation = Long.class)
+    private Long categoryIdx;
 
     @NotNull
     @Schema(description = "반복타입[EVERY_DAY ,EVERY_WEEK, EVERY_MONTH]", example = "EVERY_WEEK", implementation = CycleType.class)
@@ -33,5 +41,13 @@ public class RegisterRoutineRQ {
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Schema(description = "루틴 종료일", example = "2024-11-15", implementation = LocalDate.class)
     private LocalDate endDt; // 루틴 끝일
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    @Schema(description = "투두 시작시간 [24시간 표시제]", example = "[HH:mm:ss] 09:00:00", implementation = LocalTime.class)
+    private LocalTime startTargetTm;
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    @Schema(description = "투두 종료시간 [24시간 표시제]", example = "[HH:mm:ss] 11:00:00", implementation = LocalTime.class)
+    private LocalTime endTargetTm;
 
 }

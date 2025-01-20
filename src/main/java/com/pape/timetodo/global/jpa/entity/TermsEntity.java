@@ -1,24 +1,11 @@
 package com.pape.timetodo.global.jpa.entity;
 
-import java.time.LocalDateTime;
-
+import com.pape.timetodo.global.constant.StatusType;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "TERMS")
@@ -63,10 +50,15 @@ public class TermsEntity {
     @Comment(value = "삭제일시")
     private LocalDateTime deleteDt;
 
+    @Column(name = "STATUS", nullable = false)
+    @Comment(value = "상태")
+    private Character status;
+
     @PrePersist
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 
     @Getter

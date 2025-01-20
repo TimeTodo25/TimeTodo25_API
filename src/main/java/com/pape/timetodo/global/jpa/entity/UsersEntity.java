@@ -1,5 +1,6 @@
 package com.pape.timetodo.global.jpa.entity;
 
+import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -72,12 +73,19 @@ public class UsersEntity implements UserDetails{
     @Comment(value = "삭제일시")
     private LocalDateTime deleteDt;
 
+    @Column(name = "STATUS", nullable = false)
+    @Comment(value = "상태")
+    private Character status;
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
     private Set<AuthoritiesEntity> authorities;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
     private List<TodoEntity> todoEntities;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    private List<RoutineEntity> routineEntity;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
     private List<CategoryEntity> categoryEntities;
@@ -123,6 +131,7 @@ public class UsersEntity implements UserDetails{
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
    
 }

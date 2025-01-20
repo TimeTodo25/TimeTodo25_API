@@ -34,6 +34,8 @@ public class QFriendEntity extends EntityPathBase<FriendEntity> {
 
     public final EnumPath<FriendEntity.SendStatus> sendStatus = createEnum("sendStatus", FriendEntity.SendStatus.class);
 
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
+
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
 
     public QFriendEntity(String variable) {

@@ -1,29 +1,13 @@
 package com.pape.timetodo.global.jpa.entity;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
+import com.pape.timetodo.global.constant.StatusType;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "ROUTINE")
@@ -68,10 +52,16 @@ public class RoutineEntity {
     @Comment(value = "수정일시")
     private LocalDateTime updateDt;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "TOOD_IDX", referencedColumnName = "IDX", nullable = false)
-    @Comment(value = "루틴, 반복등록 할 투두 IDX")
-    private TodoEntity todoEntity;
+    @Column(name = "DELETE_DT", nullable = true)
+    @Comment(value = "삭제일시")
+    private LocalDateTime deleteDt; // 삭제일시
+
+    @Column(name = "STATUS", nullable = false)
+    @Comment(value = "상태")
+    private Character status; // 상태 - 삭제여부 등
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "routineEntity")
+    private List<TodoEntity> todoEntities;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME", nullable = false)
@@ -82,6 +72,7 @@ public class RoutineEntity {
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 
     @Getter

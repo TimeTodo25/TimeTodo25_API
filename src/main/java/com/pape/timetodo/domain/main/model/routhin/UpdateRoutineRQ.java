@@ -15,8 +15,8 @@ import java.util.List;
 public class UpdateRoutineRQ {
 
     @NotNull
-    @Schema(description = "투두 IDX", example = "1", implementation = Long.class)
-    private Long todoIdx;
+    @Schema(description = "루틴 IDX", example = "1", implementation = Long.class)
+    private Long routineIdx;
 
     @Schema(description = "반복타입[EVERY_DAY ,EVERY_WEEK, EVERY_MONTH]", example = "EVERY_WEEK", implementation = CycleType.class)
     private CycleType cycleType;

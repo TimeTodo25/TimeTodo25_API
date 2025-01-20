@@ -31,6 +31,8 @@ public class QTermsEntity extends EntityPathBase<TermsEntity> {
 
     public final EnumPath<TermsEntity.LangDivCd> LangDivCd = createEnum("LangDivCd", TermsEntity.LangDivCd.class);
 
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
+
     public final StringPath title = createString("title");
 
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);

@@ -1,4 +1,4 @@
-package com.pape.timetodo.domain.main.model.category;
+package com.pape.timetodo.domain.main.model.routhin;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -6,8 +6,9 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class UpdateCategoryRS {
+public class UpdateRoutineRS {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updateDt;
+
 }

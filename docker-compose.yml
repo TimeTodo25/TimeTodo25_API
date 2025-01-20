@@ -2,8 +2,11 @@ services:
   timetodo-apitest:
     container_name: timetodo-apitest
     image: "harriet99/timetodo-apitest:latest"
+    restart: unless-stopped
     ports:
       - "8080:8080"  # API 서비스 포트 매핑
+    volumes:
+      - ./logs:/data/data/com.termux/files/home/timetodo_storage/log
     logging:
       driver: json-file
       options:
