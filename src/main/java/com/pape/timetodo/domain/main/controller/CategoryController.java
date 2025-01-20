@@ -1,25 +1,16 @@
 package com.pape.timetodo.domain.main.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.pape.timetodo.domain.main.model.category.CreateCategoryRQ;
-import com.pape.timetodo.domain.main.model.category.CreateCategoryRS;
-import com.pape.timetodo.domain.main.model.category.MyCategoryRS;
-import com.pape.timetodo.domain.main.model.category.UpdateCategoryRQ;
-import com.pape.timetodo.domain.main.model.category.UpdateCategoryRS;
+import com.pape.timetodo.domain.main.model.category.*;
 import com.pape.timetodo.domain.main.service.CategoryService;
-
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Slf4j
@@ -67,6 +58,20 @@ public class CategoryController {
     public ResponseEntity<MyCategoryRS> getMyCategory(){
 
         MyCategoryRS result = categoryService.getMyCategory();
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * 카테고리 단건 상세 조회
+     * @param idx Long
+     * @return GetCategoryDetailRS
+     */
+    @GetMapping("/detail/{idx}")
+    @Operation(summary = "카테고리 데이터 단건조회", description = "카테고리 단건 데이터를 조회합니다.")
+    public ResponseEntity<GetCategoryDetailRS> detailCategory(@PathVariable(name = "idx") @Parameter(name="idx", description = "카테고리 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        GetCategoryDetailRS result = categoryService.detailCategory(idx);
 
         return ResponseEntity.ok().body(result);
     }

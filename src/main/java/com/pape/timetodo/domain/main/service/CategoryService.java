@@ -5,6 +5,7 @@ import com.pape.timetodo.domain.main.model.category.*;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.CategoryEntity;
+import com.pape.timetodo.global.jpa.entity.TodoEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.CategoryQueryRepository;
 import com.pape.timetodo.global.jpa.repository.CategoryRepository;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -60,34 +62,6 @@ public class CategoryService {
     }
 
     /**
-     * 내 카테고리 조회
-     * @return MyCategoryRS
-     */
-    public MyCategoryRS getMyCategory() {
-
-        UsersEntity usersEntity = userUtil.getUsersEntity();
-
-        List<GetCategoryModel> categoryList = categoryQueryRepository.findMyCategoryByUsresEntity(usersEntity).stream()
-            .map(entity -> {
-                GetCategoryModel result = new GetCategoryModel();
-                result.setIdx(entity.getIdx());
-                result.setTitle(entity.getTitle());
-                result.setMainColor(entity.getMainColor());
-                result.setPublicStatus(entity.getPublicStatus());
-                result.setCreateDt(entity.getCreateDt());
-                result.setUpdateDt(entity.getUpdateDt());
-
-                return result;
-            })
-            .toList();
-
-        MyCategoryRS result = new MyCategoryRS();
-        result.setCategoryList(categoryList);
-
-        return result;
-    }
-
-    /**
      * 카테고리 수정
      * @param rq UpdateCategoryRQ
      * @return UpdateCategoryRS
@@ -107,6 +81,56 @@ public class CategoryService {
         
         UpdateCategoryRS result = new UpdateCategoryRS();
         result.setUpdateDt(categoryEntity.getUpdateDt());
+
+        return result;
+    }
+
+    /**
+     * 내 카테고리 조회
+     * @return MyCategoryRS
+     */
+    public MyCategoryRS getMyCategory() {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        List<GetCategoryModel> categoryList = categoryQueryRepository.findMyCategoryByUsresEntity(usersEntity).stream()
+                .map(entity -> {
+                    GetCategoryModel result = new GetCategoryModel();
+                    result.setIdx(entity.getIdx());
+                    result.setTitle(entity.getTitle());
+                    result.setMainColor(entity.getMainColor());
+                    result.setPublicStatus(entity.getPublicStatus());
+                    result.setCreateDt(entity.getCreateDt());
+                    result.setUpdateDt(entity.getUpdateDt());
+
+                    return result;
+                })
+                .toList();
+
+        MyCategoryRS result = new MyCategoryRS();
+        result.setCategoryList(categoryList);
+
+        return result;
+    }
+
+    /**
+     * 카테고리 단건 상세 조회
+     * @return MyCategoryRS
+     */
+    public GetCategoryDetailRS detailCategory(Long idx) {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        CategoryEntity categoryEntity = categoryRepository.findByIdxAndUsersEntity(idx, usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+
+        List<TodoEntity> todoList = categoryEntity.getTodoEntities();
+
+        GetCategoryDetailRS result = new GetCategoryDetailRS();
+        result.setTitle(categoryEntity.getTitle());
+        result.setPublicStatus(categoryEntity.getPublicStatus());
+        result.setMainColor(categoryEntity.getMainColor());
+        result.setTodoIdxList(todoList.stream().map(TodoEntity::getIdx).collect(Collectors.toList()));
 
         return result;
     }
