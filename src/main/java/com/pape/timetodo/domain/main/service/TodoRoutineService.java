@@ -67,8 +67,7 @@ public class TodoRoutineService {
             .content(rq.getContent())
             .categoryEntity(categoryEntity)
             .usersEntity(usersEntity)
-            .targetDate(rq.getDate())
-            .status(StatusType.NORMAL.getValue());
+            .targetDate(rq.getDate());
 
         if(rq.getStartTargetTm() != null) todoEntityBuilder.startTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntityBuilder.endTargetTm(rq.getEndTargetTm());
