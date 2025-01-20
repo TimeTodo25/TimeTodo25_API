@@ -90,7 +90,7 @@ public class TodoRoutineService {
      * @return CreateTodoRS
      */
     // @Transactional // TODO: 같은 클래스의 내부 메서드라 트랜잭션이 적용 안된다고 함. 고민 필요.
-    public CreateTodoRS createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity) {
+    public TodoEntity createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity) {
 
         TodoEntity.TodoEntityBuilder todoEntityBuilder = TodoEntity.builder()
                 .content(rq.getContent())
@@ -106,11 +106,7 @@ public class TodoRoutineService {
 
         todoEntity = todoRepository.save(todoEntity);
 
-        CreateTodoRS result = new CreateTodoRS();
-        result.setTodoIdx(todoEntity.getIdx());
-        result.setUpdateDt(todoEntity.getUpdateDt());
-
-        return result;
+        return todoEntity;
     }
 
     /**
@@ -327,15 +323,16 @@ public class TodoRoutineService {
             newTodo.setStartTargetTm(startTargetTm);
             newTodo.setEndTargetTm(endTargetTm);
 
-            CreateTodoRS todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+            TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+            todoEntityList.add(todo);
         }
 
         // 날짜 겹치는 기존의 TodoEntity 삭제
         if(rq.getTodoIdx() != null) {
-            Optional<TodoEntity> todo = todoRepository.findById(rq.getTodoIdx());
-            if(todo.isPresent() && (todo.get().getTargetDate().isEqual(rq.getStartDt()) || todo.get().getTargetDate().isAfter(rq.getStartDt())) &&
-            (todo.get().getTargetDate().isEqual(rq.getEndDt()) || todo.get().getTargetDate().isBefore(rq.getEndDt()))) {
-                todoRepository.delete(todo.get());
+            Optional<TodoEntity> oldTodo = todoRepository.findById(rq.getTodoIdx());
+            if(oldTodo.isPresent() && (oldTodo.get().getTargetDate().isEqual(rq.getStartDt()) || oldTodo.get().getTargetDate().isAfter(rq.getStartDt())) &&
+            (oldTodo.get().getTargetDate().isEqual(rq.getEndDt()) || oldTodo.get().getTargetDate().isBefore(rq.getEndDt()))) {
+                todoRepository.delete(oldTodo.get());
             }
             // _todo.ifPresent(todoRepository::delete); // TODO: 그냥 기존 투두는 날짜 겹치든 말든 없애는 게 낫지 않나 논의 필요
         }
