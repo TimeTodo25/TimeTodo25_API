@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -449,10 +450,11 @@ public class TodoRoutineService {
 
     /**
      * TODO_ 시간기록 등록
-     * @param rq
+     * @param rq RegistTodoTimerRQ
+     * @return RegistTodoTimerRS
      */
     @Transactional
-    public void registTodoTimer(RegistTodoTimerRQ rq) {
+    public RegistTodoTimerRS registTodoTimer(RegistTodoTimerRQ rq) {
         TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
@@ -473,6 +475,16 @@ public class TodoRoutineService {
         }
 
         todoTimerHistoryRepository.saveAll(timerHistoryEntities);
+
+        List<Long> timerIdxList = timerHistoryEntities.stream()
+                .map(TodoTimerHistoryEntity::getIdx)
+                .collect(Collectors.toList());
+
+        RegistTodoTimerRS result = new RegistTodoTimerRS();
+        result.setTimerIdxList(timerIdxList);
+        result.setUpdateDt(LocalDateTime.now());
+
+        return result;
     }
 
     /**

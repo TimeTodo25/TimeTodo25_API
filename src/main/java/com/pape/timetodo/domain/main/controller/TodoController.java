@@ -81,16 +81,16 @@ public class TodoController {
 
     /**
      * Todo_ 타이머 데이터 등록
-     * @param rq
-     * @return
+     * @param rq RegistTodoTimerRQ
+     * @return RegistTodoTimerRS
      */
     @PostMapping("/register/todo/timer")
     @Operation(summary = "투두 타이머 등록", description = "투두 타이머 스톱워치 데이터를 등록합니다.")
-    public ResponseEntity<Void> registTodoTimer(@Valid @RequestBody RegistTodoTimerRQ rq){
+    public ResponseEntity<RegistTodoTimerRS> registTodoTimer(@Valid @RequestBody RegistTodoTimerRQ rq){
 
-        todoRoutineService.registTodoTimer(rq);
+        RegistTodoTimerRS result = todoRoutineService.registTodoTimer(rq);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(result);
     }
 
 
