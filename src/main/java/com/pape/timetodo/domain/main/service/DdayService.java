@@ -1,6 +1,7 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.dday.RegisterDayRQ;
+import com.pape.timetodo.domain.main.model.dday.RegisterDdayRS;
+import com.pape.timetodo.domain.main.model.dday.registerDdayRQ;
 import com.pape.timetodo.global.jpa.entity.DdayEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.DdayRepository;
@@ -19,8 +20,13 @@ public class DdayService {
 
     private final UserUtil userUtil;
 
+    /**
+     * 디데이 등록
+     * @param rq RegisterDayRQ
+     * @return RegisterDdayRS
+     */
     @Transactional
-    public void registerDday(RegisterDayRQ rq) {
+    public RegisterDdayRS registerDday(registerDdayRQ rq) {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
@@ -32,5 +38,11 @@ public class DdayService {
                 .build();
 
         ddayRepository.save(ddayEntity);
+
+        RegisterDdayRS result = new RegisterDdayRS();
+        result.setDdayIdx(ddayEntity.getIdx());
+        result.setUpdateDt(ddayEntity.getUpdateDt());
+
+        return result;
     }
 }

@@ -26,7 +26,11 @@ public class QDdayEntity extends EntityPathBase<DdayEntity> {
 
     public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);
 
+    public final DateTimePath<java.time.LocalDateTime> deleteDt = createDateTime("deleteDt", java.time.LocalDateTime.class);
+
     public final NumberPath<Long> idx = createNumber("idx", Long.class);
+
+    public final ComparablePath<Character> status = createComparable("status", Character.class);
 
     public final BooleanPath targetDelYn = createBoolean("targetDelYn");
 
