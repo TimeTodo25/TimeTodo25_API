@@ -5,6 +5,7 @@ import com.pape.timetodo.domain.main.model.GetTodoModel;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
 import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
+import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRS;
 import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
@@ -547,12 +548,9 @@ public class TodoRoutineService {
      * @param rq
      */
     @Transactional
-    public void updateRoutine(UpdateRoutineRQ rq) {
+    public UpdateRoutineRS updateRoutine(UpdateRoutineRQ rq) {
 
-        TodoEntity todoEntity = this.getMyTodoData(rq.getTodoIdx());
-        RoutineEntity routineEntity = todoEntity.getRoutineEntity();
-
-        if(routineEntity == null) throw new AppException(ExceptionCode.DATA_NOT_FIND);
+        RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
 
         // Cycle 타입 변경
         if(rq.getCycleType() != null) {
@@ -598,10 +596,26 @@ public class TodoRoutineService {
             routineEntity.setCycleValue(cycleValue.toString());
         }
 
+        // 있던 todo 없애야..?
         if(rq.getStartDt() != null) routineEntity.setStartDt(rq.getStartDt());
         if(rq.getEndDt() != null) routineEntity.setEndDt(rq.getEndDt());
-        if(rq.getStartTm() != null) todoEntity.setStartTargetTm(rq.getStartTm());
-        if(rq.getEndTm() != null) todoEntity.setEndTargetTm(rq.getEndTm());
+
+        // 속한 Todo_ 데이터도 시간 변경
+        LocalDateTime now = LocalDateTime.now();
+        if(rq.getStartTm() != null || rq.getEndTm() != null) {
+            LocalTime newStartTm = rq.getStartTm();
+            LocalTime newEndTm = rq.getEndTm();
+            for(TodoEntity todoEntity : routineEntity.getTodoEntities()) {
+                todoEntity.setStartTargetTm(newStartTm);
+                todoEntity.setEndTargetTm(newEndTm);
+                todoEntity.setUpdateDt(now);
+                todoRepository.save(todoEntity);
+            }
+        }
+
+        UpdateRoutineRS result = new UpdateRoutineRS();
+        result.setUpdateDt(now);
+        return result;
     }
 
     /**
@@ -624,6 +638,14 @@ public class TodoRoutineService {
 
         return todoRepository.findByIdxAndUsersEntity(idx, usersEntity)
             .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+    }
+
+    private RoutineEntity getMyRoutineData(Long idx){
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        return routineRepository.findByIdxAndUsersEntity(idx, usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
     }
 
 }

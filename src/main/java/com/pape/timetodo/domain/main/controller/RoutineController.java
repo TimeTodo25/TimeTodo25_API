@@ -3,6 +3,7 @@ package com.pape.timetodo.domain.main.controller;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
 import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
 import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
+import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRS;
 import com.pape.timetodo.domain.main.service.TodoRoutineService;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -47,16 +48,16 @@ public class RoutineController {
 
     /**
      * 루틴 수정
-     * @param rq
-     * @return
+     * @param rq UpdateRoutineRQ
+     * @return UpdateRoutineRS
      */
     @PutMapping("/routine/update")
     @Operation(summary = "루틴수정", description = "투두 루틴 수정합니다.")
-    public ResponseEntity<Void> updateRoutine(@Valid @RequestBody UpdateRoutineRQ rq){
+    public ResponseEntity<UpdateRoutineRS> updateRoutine(@Valid @RequestBody UpdateRoutineRQ rq){
 
-        todoRoutineService.updateRoutine(rq);
+        UpdateRoutineRS result = todoRoutineService.updateRoutine(rq);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(result);
     }
 
 
