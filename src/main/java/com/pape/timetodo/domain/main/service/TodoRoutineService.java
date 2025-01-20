@@ -613,7 +613,7 @@ public class TodoRoutineService {
             routineEntity.setCycleValue(cycleValue.toString());
         }
 
-        // 있던 todo 없애야..?
+        // TODO: 있던 todo 없애야..하는...?
         if(rq.getStartDt() != null) routineEntity.setStartDt(rq.getStartDt());
         if(rq.getEndDt() != null) routineEntity.setEndDt(rq.getEndDt());
 
