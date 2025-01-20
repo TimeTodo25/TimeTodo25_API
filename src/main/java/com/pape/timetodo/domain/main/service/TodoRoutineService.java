@@ -619,8 +619,8 @@ public class TodoRoutineService {
     }
 
     /**
-     * 루틴 삭제[물리] -> TODO: 테이블 분리 후 논리 삭제로 변경
-     * @param idx
+     * 루틴 삭제 [논리 삭제]
+     * @param idx Long
      */
     @Transactional
     public void deleteRoutine(Long idx) {
@@ -629,7 +629,9 @@ public class TodoRoutineService {
 
         if(routineEntity == null) return;
 
-        routineRepository.delete(routineEntity);
+        routineEntity.setDeleteDt(LocalDateTime.now());
+        routineEntity.setStatus(StatusType.DELETED.getValue());
+        routineRepository.save(routineEntity);
     }
         
     private TodoEntity getMyTodoData(Long idx){
