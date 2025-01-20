@@ -72,7 +72,7 @@ public class RoutineController {
 
         if(idx == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER);
 
-        todoRoutineService.deleteRoutine(idx); // TODO: 논리 삭제만 진행
+        todoRoutineService.deleteRoutine(idx);
 
         return ResponseEntity.ok().build();
     }
