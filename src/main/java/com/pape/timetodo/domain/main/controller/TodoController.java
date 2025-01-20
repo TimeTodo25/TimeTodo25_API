@@ -68,16 +68,16 @@ public class TodoController {
 
     /**
      * Todo_ 수정
-     * @param rq
-     * @return
+     * @param rq UpdateTodoRQ
+     * @return UpdateTodoRS
      */
     @PutMapping("/update")
     @Operation(summary = "투두 수정", description = "투두 데이터를 수정합니다.")
-    public ResponseEntity<Void> updateTodo(@Valid @RequestBody UpdateTodoRQ rq){
+    public ResponseEntity<UpdateTodoRS> updateTodo(@Valid @RequestBody UpdateTodoRQ rq){
 
-        todoRoutineService.updateTodo(rq);
+        UpdateTodoRS result = todoRoutineService.updateTodo(rq);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(result);
     }
 
     /**

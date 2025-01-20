@@ -427,10 +427,11 @@ public class TodoRoutineService {
 
     /**
      * TODO_ 데이터 업데이트
-     * @param rq
+     * @param rq UpdateTodoRQ
+     * @return UpdateTodoRS
      */
     @Transactional
-    public void updateTodo(UpdateTodoRQ rq) {
+    public UpdateTodoRS updateTodo(UpdateTodoRQ rq) {
 
         TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
 
@@ -438,6 +439,14 @@ public class TodoRoutineService {
         if(rq.getTargetDate() != null) todoEntity.setTargetDate(rq.getTargetDate());
         if(rq.getStartTargetTm() != null) todoEntity.setStartTargetTm(rq.getStartTargetTm());
         if(rq.getEndTargetTm() != null) todoEntity.setEndTargetTm(rq.getEndTargetTm());
+
+        todoEntity.setUpdateDt(LocalDateTime.now());
+        todoRepository.save(todoEntity);
+
+        UpdateTodoRS result = new UpdateTodoRS();
+        result.setUpdateDt(todoEntity.getUpdateDt());
+
+        return result;
     }
 
     /**
