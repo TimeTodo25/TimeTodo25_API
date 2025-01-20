@@ -64,7 +64,6 @@ public class RoutineController {
     /**
      * 루틴 삭제
      * @param idx 루틴 삭제할 Todo번호
-     * @return
      */
     @DeleteMapping("/routine/delete/{idx}")
     @Operation(summary = "루틴삭제", description = "투두 루틴 삭제합니다.")
