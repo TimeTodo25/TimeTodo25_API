@@ -101,11 +101,6 @@ public class CategoryService {
         categoryEntity.setUpdateDt(LocalDateTime.now());
         
         UpdateCategoryRS result = new UpdateCategoryRS();
-        result.setIdx(categoryEntity.getIdx());
-        result.setCategoryTitle(categoryEntity.getTitle());
-        result.setMainColor(categoryEntity.getMainColor());
-        result.setPublicStatus(categoryEntity.getPublicStatus());
-        result.setCreateDt(categoryEntity.getCreateDt());
         result.setUpdateDt(categoryEntity.getUpdateDt());
 
         return result;
