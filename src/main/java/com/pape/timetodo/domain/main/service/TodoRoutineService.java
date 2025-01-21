@@ -357,7 +357,7 @@ public class TodoRoutineService {
     }
 
     /**
-     * 개인 카테고리 및 TODO_ 조회
+     * 개인 카테고리 및 TODO_ 조회 
      * @param usersEntity
      * @return
      */
@@ -365,8 +365,10 @@ public class TodoRoutineService {
 
         if(usersEntity == null){
             usersEntity = userUtil.getUsersEntity();
-        }                
+        }
 
+        // TODO: 홈화면이라 지금 안쓰고 있지만 쓰려면 고쳐야 할 것 - RoutineYn boolean 필드인데 불필요함. routine 필드 null인지 체크하게 해
+        // GetTodoModel과 todoQueryRepository도 수정이 필요함
         return categoryRepository.findByUsersEntity(usersEntity).stream()
             .map(entity -> {
                 List<GetTodoModel> todoList = todoQueryRepository.findByCategoryAndDate(entity, rq.getDate()).stream()
