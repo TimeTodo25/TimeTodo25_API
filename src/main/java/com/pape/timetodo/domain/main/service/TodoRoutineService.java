@@ -1,11 +1,9 @@
 package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
+import com.pape.timetodo.domain.main.model.GetRoutineModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
-import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
-import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
-import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
-import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRS;
+import com.pape.timetodo.domain.main.model.routine.*;
 import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
@@ -45,6 +43,8 @@ public class TodoRoutineService {
     private final CategoryRepository categoryRepository;
 
     private final RoutineRepository routineRepository;
+
+    private final RoutineQueryRepository routineQueryRepository;
 
     private final TodoTimerHistoryRepository todoTimerHistoryRepository;
 
@@ -634,6 +634,53 @@ public class TodoRoutineService {
 
         UpdateRoutineRS result = new UpdateRoutineRS();
         result.setUpdateDt(now);
+        return result;
+    }
+
+    public GetMyRoutineRS getMyRoutineList() {
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        List<GetRoutineModel> routineList = routineQueryRepository.findMyRoutineByUsresEntity(usersEntity).stream()
+                .map(entity -> {
+                    GetRoutineModel result = new GetRoutineModel();
+                    result.setIdx(entity.getIdx());
+                    result.setCycleType(entity.getCycleType());
+                    result.setCycleValue(entity.getCycleValue());
+                    result.setRm(entity.getRm());
+                    result.setStartDt(entity.getStartDt());
+                    result.setEndDt(entity.getEndDt());
+
+                    return result;
+                })
+                .toList();
+
+        GetMyRoutineRS result = new GetMyRoutineRS();
+        result.setRoutineList(routineList);
+
+        return result;
+    }
+
+    public GetRoutineDetailRS detailRoutine(Long idx) {
+
+        RoutineEntity routineEntity = this.getMyRoutineData(idx);
+
+        GetRoutineDetailRS result = new GetRoutineDetailRS();
+        result.setIdx(routineEntity.getIdx());
+        result.setCycleType(routineEntity.getCycleType());
+        result.setCycleValue(result.getCycleValue());
+        result.setRm(result.getRm());
+        result.setStartDt(routineEntity.getStartDt());
+        result.setEndDt(routineEntity.getEndDt());
+        // Todo: 한 루틴에 속한 투두의 content는 모두 같지 않나? 시작, 끝 시간도 그런 것 같은데...? 차라리 todo 개수를 반환하는 게...
+        result.setTodoList(routineEntity.getTodoEntities().stream().map(todo -> {
+            GetTodoModel model = new GetTodoModel();
+            model.setIdx(todo.getIdx());
+            model.setContent(todo.getContent());
+            model.setTargetDate(todo.getTargetDate());
+            // TODO: totalTime이 필요한가? 모두 있는 건 아닐텐데
+            return model;
+        }).collect(Collectors.toList()));
+
         return result;
     }
 

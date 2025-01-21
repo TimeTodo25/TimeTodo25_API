@@ -1,9 +1,6 @@
 package com.pape.timetodo.domain.main.controller;
 
-import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRQ;
-import com.pape.timetodo.domain.main.model.routhin.RegisterRoutineRS;
-import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRQ;
-import com.pape.timetodo.domain.main.model.routhin.UpdateRoutineRS;
+import com.pape.timetodo.domain.main.model.routine.*;
 import com.pape.timetodo.domain.main.service.TodoRoutineService;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -45,6 +42,36 @@ public class RoutineController {
 
         return ResponseEntity.ok().body(result);
     }
+
+
+    /**
+     * 내 루틴 목록 조회
+     * @return GetMyRoutineRS
+     */
+    @GetMapping("/my")
+    @Operation(summary = "내 루틴 조회", description = "내가 만든 루틴 목록을 조회합니다.")
+    public ResponseEntity<GetMyRoutineRS> getMyCategory(){
+
+        GetMyRoutineRS result = todoRoutineService.getMyRoutineList();
+
+        return ResponseEntity.ok().body(result);
+    }
+
+
+    /**
+     * 루틴 단건 상세 조회
+     * @param idx Long
+     * @return GetCategoryDetailRS
+     */
+    @GetMapping("/detail/{idx}")
+    @Operation(summary = "루틴 데이터 단건조회", description = "루틴 단건 데이터를 조회합니다.")
+    public ResponseEntity<GetRoutineDetailRS> detailCategory(@PathVariable(name = "idx") @Parameter(name="idx", description = "루틴 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        GetRoutineDetailRS result = todoRoutineService.detailRoutine(idx);
+
+        return ResponseEntity.ok().body(result);
+    }
+
 
     /**
      * 루틴 수정

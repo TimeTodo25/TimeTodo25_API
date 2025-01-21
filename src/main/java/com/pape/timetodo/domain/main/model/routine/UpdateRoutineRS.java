@@ -1,4 +1,4 @@
-package com.pape.timetodo.domain.main.model.routhin;
+package com.pape.timetodo.domain.main.model.routine;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
