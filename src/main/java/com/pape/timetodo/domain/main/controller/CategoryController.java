@@ -83,7 +83,7 @@ public class CategoryController {
      * @param idx Long
      */
     @DeleteMapping("/{idx}/delete")
-    @Operation(summary = "투두 삭제", description = "투두 데이터를 삭제합니다. [논리삭제]")
+    @Operation(summary = "카테고리 삭제", description = "카테고리 데이터를 삭제합니다. [논리삭제]")
     public ResponseEntity<Void> deleteCategory(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "삭제할 카테고리 IDX", in = ParameterIn.PATH, example = "1") Long idx){
 
         if(idx == null){
