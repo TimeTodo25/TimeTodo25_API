@@ -2,6 +2,7 @@ package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
 import com.pape.timetodo.domain.main.model.category.*;
+import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.CategoryEntity;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,6 +135,23 @@ public class CategoryService {
         result.setTodoIdxList(todoList.stream().map(TodoEntity::getIdx).collect(Collectors.toList()));
 
         return result;
+    }
+
+    /**
+     * 카테고리 삭제 [논리 삭제]
+     * @param idx Long
+     */
+    public void deleteCategory(Long idx) {
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        Optional<CategoryEntity> categoryEntityWrapper = categoryRepository.findByIdxAndUsersEntity(idx, usersEntity);
+
+        if(categoryEntityWrapper.isPresent()){
+
+            CategoryEntity categoryEntity = categoryEntityWrapper.get();
+            categoryEntity.setDeleteDt(LocalDateTime.now());
+            categoryEntity.setStatus(StatusType.DELETED.getValue());
+        }
     }
 
 }
