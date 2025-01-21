@@ -690,13 +690,26 @@ public class TodoRoutineService {
      */
     @Transactional
     public void deleteRoutine(Long idx) {
-        TodoEntity todoEntity = this.getMyTodoData(idx);
-        RoutineEntity routineEntity = todoEntity.getRoutineEntity();
+        RoutineEntity routineEntity = getMyRoutineData(idx);
 
         if(routineEntity == null) return;
 
-        routineEntity.setDeleteDt(LocalDateTime.now());
-        routineEntity.setStatus(StatusType.DELETED.getValue());
+        LocalDateTime now = LocalDateTime.now();
+        Character d = StatusType.DELETED.getValue();
+
+        for(TodoEntity todo : routineEntity.getTodoEntities()) {
+            if(todo.getTargetDate().isBefore(LocalDate.now())) {
+                // 이미 타겟 날짜가 지났으면 루틴에서 제외
+                todo.setRoutineEntity(null);
+            } else {
+                // 그외에는 논리 삭제
+                todo.setDeleteDt(now);
+                todo.setStatus(d);
+            }
+        }
+
+        routineEntity.setDeleteDt(now);
+        routineEntity.setStatus(d);
         routineRepository.save(routineEntity);
     }
         
