@@ -110,7 +110,7 @@ public class TodoRoutineService {
     }
 
 //    /**
-//     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_ // TODO: 삭제하라고? - 디코 확인!
+//     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_ // TODO: 삭제 보류
 //     * @return
 //     */
 //    @Transactional(readOnly = true)
@@ -677,7 +677,7 @@ public class TodoRoutineService {
             model.setIdx(todo.getIdx());
             model.setContent(todo.getContent());
             model.setTargetDate(todo.getTargetDate());
-            // TODO: totalTime이 필요한가? 모두 있는 건 아닐텐데
+            // TODO: totalTime이 필요한가? 실행 전의 투두는 어차피 0인데
             return model;
         }).collect(Collectors.toList()));
 
