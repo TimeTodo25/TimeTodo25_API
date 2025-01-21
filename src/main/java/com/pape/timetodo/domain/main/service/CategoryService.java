@@ -141,6 +141,7 @@ public class CategoryService {
      * 카테고리 삭제 [논리 삭제]
      * @param idx Long
      */
+    @Transactional
     public void deleteCategory(Long idx) {
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
@@ -151,6 +152,8 @@ public class CategoryService {
             CategoryEntity categoryEntity = categoryEntityWrapper.get();
             categoryEntity.setDeleteDt(LocalDateTime.now());
             categoryEntity.setStatus(StatusType.DELETED.getValue());
+
+            categoryRepository.save(categoryEntity);
         }
     }
 

@@ -87,6 +87,7 @@ public class DdayService {
      * 디데이 삭제 [논리 삭제]
      * @param idx Long
      */
+    @Transactional
     public void deleteDday(Long idx) {
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
@@ -97,6 +98,8 @@ public class DdayService {
             DdayEntity ddayEntity = ddayEntityWrapper.get();
             ddayEntity.setDeleteDt(LocalDateTime.now());
             ddayEntity.setStatus(StatusType.DELETED.getValue());
+
+            ddayRepository.save(ddayEntity); // JPA 더티체킹을 믿지만, 만일에 대비해서
         }
     }
     
