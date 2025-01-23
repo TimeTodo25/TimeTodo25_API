@@ -38,6 +38,8 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public final ListPath<FriendEntity, QFriendEntity> friendEntities = this.<FriendEntity, QFriendEntity>createList("friendEntities", FriendEntity.class, QFriendEntity.class, PathInits.DIRECT2);
 
+    public final ListPath<HomeEntity, QHomeEntity> homeEntities = this.<HomeEntity, QHomeEntity>createList("homeEntities", HomeEntity.class, QHomeEntity.class, PathInits.DIRECT2);
+
     public final StringPath nickname = createString("nickname");
 
     public final NumberPath<Integer> passFailCount = createNumber("passFailCount", Integer.class);
