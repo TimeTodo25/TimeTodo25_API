@@ -1,13 +1,12 @@
 package com.pape.timetodo.global.jpa.repository;
 
-import com.pape.timetodo.domain.main.model.DdayTodoModel;
-import com.pape.timetodo.domain.main.model.GetTodoModel;
+import com.pape.timetodo.domain.main.model.home.HomeDdayModel;
+import com.pape.timetodo.domain.main.model.home.HomeTodoModel;
+import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.jpa.entity.*;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.NumberTemplate;
 import com.querydsl.core.types.dsl.TimeTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -26,90 +25,69 @@ public class TodoQueryRepository {
     private final JPAQueryFactory query;
 
     /**
-     * TODO : 리펙토링 필요 현재는 카테고리별로 회차하며 조회하나 모두 가져오는 것으로 조회해야할지도 모름
-     * @param categoryEntity
-     * @return
+     * 카테고리별로 회차하며 해당 날짜의 투두 모두 조회
+     * @param categoryEntity CategoryEntity
+     * @param date LocalDate
+     * @return HomeTodoModel
      */
-    public List<GetTodoModel> findByCategoryAndDate(CategoryEntity categoryEntity, LocalDate date){
+    public List<HomeTodoModel> findByCategoryAndDate(CategoryEntity categoryEntity, LocalDate date){
 
         QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
-        QRoutineEntity qRoutineEntity = QRoutineEntity.routineEntity;
         QTodoTimerHistoryEntity qTodoTimerHistoryEntity = QTodoTimerHistoryEntity.todoTimerHistoryEntity;
-
-        BooleanExpression routineStratDt = Expressions.booleanTemplate("DATE_FORMAT({0}, '%Y-%m-%d') <= DATE_FORMAT({1}, '%Y-%m-%d')", qRoutineEntity.startDt, date.toString());
-        BooleanExpression routineEndDt = Expressions.booleanTemplate("DATE_FORMAT({0}, '%Y-%m-%d') >= DATE_FORMAT({1}, '%Y-%m-%d')", qRoutineEntity.endDt, date.toString());
-
-        // 루틴이 적용 되는지 확인
-        BooleanBuilder routineCondition = new BooleanBuilder();
-        routineCondition.and(qRoutineEntity.idx.isNotNull());
-        routineCondition.and(routineStratDt);
-        routineCondition.and(routineEndDt);
-
-        BooleanExpression routineYn = Expressions
-            .cases()
-            .when(routineCondition)
-                .then(true)
-            .otherwise(false);
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(qTodoEntity.categoryEntity.eq(categoryEntity));
         builder.and(Expressions.booleanTemplate("DATE_FORMAT({0}, '%Y-%m-%d') = DATE_FORMAT({1}, '%Y-%m-%d')", qTodoEntity.targetDate, date.toString()));
-        builder.or(routineYn.eq(true));
-        builder.and(qTodoEntity.deleteDt.isNull());
+        builder.and(qTodoEntity.status.notIn(StatusType.DELETED.getValue()));
 
         TimeTemplate<Time> todoTotalTm = Expressions.timeTemplate(Time.class,"SEC_TO_TIME(SUM(TIME_TO_SEC({0})))", qTodoTimerHistoryEntity.totalTm);
 
         return query
             .select(Projections.bean(
-                GetTodoModel.class,
+                    HomeTodoModel.class,
                 qTodoEntity.idx.as("idx"),
                 qTodoEntity.content.as("content"),
                 qTodoEntity.targetDate.as("targetDate"),
                 qTodoEntity.startTargetTm.as("startTargetTm"),
                 qTodoEntity.endTargetTm.as("endTargetTm"),
                 qTodoEntity.createDt.as("createDt"),
-                routineYn.as("routineYn"),
-                
-                qRoutineEntity.cycleType.as("cycleType"),
-                qRoutineEntity.cycleValue.as("cycleValue"),
-                qRoutineEntity.rm.as("rm"),
-                qRoutineEntity.startDt.as("routineStartDt"),
-                qRoutineEntity.endDt.as("routineEndDt"),
 
                 todoTotalTm.as("dummyTodoTotalTm")
             ))
             .from(qTodoEntity)
-            .leftJoin(qRoutineEntity)
-                .on(qTodoEntity.idx.eq(qTodoEntity.routineEntity.idx))
             .leftJoin(qTodoTimerHistoryEntity)
                 .on(qTodoEntity.idx.eq(qTodoTimerHistoryEntity.todoEntity.idx))
             .where(builder)
             .fetch();
     }
 
-    public List<DdayTodoModel> findDdayTodoByUsersEntity(UsersEntity usersEntity){
+    /**
+    * 디데이 -/+ 계산은 앱단에서 하기로 결정함에 따라,
+    * 기존의 남은 날짜 반환하던 로직을 디데이 해당 날짜 반환하도록 수정함
+     */
+    public List<HomeDdayModel> findDdayTodoByUsersEntity(UsersEntity usersEntity, LocalDate date) {
 
         QDdayEntity qDdayEntity = QDdayEntity.ddayEntity;
 
-        NumberTemplate<Integer> dDay = Expressions.numberTemplate(Integer.class, "TIMESTAMPDIFF(DAY, NOW(), {0})", qDdayEntity.targetDt);
-
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(qDdayEntity.usersEntity.eq(usersEntity));
+        builder.and(
+                qDdayEntity.targetDelYn.isFalse() // ddayDelYn이 false인 경우 = 해당 날짜 도래해도 삭제하지 않음 옵션의 디데이만 포함
+                        .or(qDdayEntity.targetDt.goe(date)) // 또는 targetDt(디데이 날짜)가 date(기준 날짜)보다 미래이거나 같은 경우 포함
+        );
+        // TODO: 차후 status 적용해서 그냥 삭제되지 않은 Dday 모두 가져가도록 할 예정 (자동 삭제 적용 이후)
 
         return query
-            .select(Projections.bean(
-                DdayTodoModel.class,
-                qDdayEntity.idx.as("idx"),
-                qDdayEntity.content.as("content"),
-                dDay.as("intervalDay"),
-                qDdayEntity.createDt.as("createDt"),
-                qDdayEntity.updateDt.as("updateDt")
-            ))
-            .from(qDdayEntity)
-            .where(builder)
-            .orderBy(dDay.asc())
-            .fetch();
+                .select(Projections.bean(
+                        HomeDdayModel.class,
+                        qDdayEntity.idx.as("idx"),
+                        qDdayEntity.content.as("content"),
+                        qDdayEntity.targetDt.as("targetDt")
+                ))
+                .from(qDdayEntity)
+                .where(builder)
+                .orderBy(qDdayEntity.targetDt.asc())
+                .fetch();
     }
-
 
 }

@@ -1,8 +1,8 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.GetCategoryModel;
 import com.pape.timetodo.domain.main.model.GetRoutineModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
+import com.pape.timetodo.domain.main.model.home.*;
 import com.pape.timetodo.domain.main.model.routine.*;
 import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
@@ -26,7 +26,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -109,24 +108,97 @@ public class TodoRoutineService {
         return todoEntity;
     }
 
-//    /**
-//     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_ // TODO: 삭제 보류
-//     * @return
-//     */
-//    @Transactional(readOnly = true)
-//    public GetHomeTodoRS getHomeTodo(GetHomeTodoRQ rq) {
-//
-//        UsersEntity usersEntity = userUtil.getUsersEntity();
-//
-//        List<GetCategoryModel> categoryList = this.getMyCategoryList(usersEntity, rq);
-//        List<DdayTodoModel> intervalDayTodoModels = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity);
-//
-//        GetHomeTodoRS result = new GetHomeTodoRS();
-//        result.setCategoryList(categoryList);
-//        result.setIntervalDayTodoList(intervalDayTodoModels);
-//
-//        return result;
-//    }
+    /**
+     * 홈화면 :: Todo데이터 조회 D-day TODO_, Category TODO_
+     * @param rq GetHomeRQ
+     * @return GetHomeRS
+     */
+    public GetHomeRS getHomeTodo(GetHomeRQ rq) {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        LocalDate date = rq.getDate();
+
+        List<HomeDdayModel> ddayList = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity, date);
+
+        List<HomeCategoryTodoModel> categoryTodoList = this.getMyCategoryList(usersEntity);
+
+        List<HomeCategoryModel> categoryList = new ArrayList<>();
+        List<HomeTimerHistoryModel> timerHistoryList = new ArrayList<>();
+
+        for(HomeCategoryTodoModel categoryTodoModel : categoryTodoList) {
+            String mainColor = categoryTodoModel.getMainColor();
+
+            // HomeCategoryModel의 카테고리 정보
+            HomeCategoryModel categoryModel = new HomeCategoryModel();
+            categoryModel.setIdx(categoryTodoModel.getIdx());
+            categoryModel.setTitle(categoryTodoModel.getTitle());
+            categoryModel.setMainColor(mainColor);
+            categoryModel.setPublicStatus(categoryTodoModel.getPublicStatus());
+
+            // HomeCategoryModel의 투두 배열, 타임히스토리 배열
+            List<TodoEntity> todoList = categoryTodoModel.getTodoList();
+            List<HomeTodoModel> todoModelList = new ArrayList<>(); // HomeTodoModel 배열 생성
+
+            for(TodoEntity todo : todoList) {
+
+                if(todo.getTargetDate().equals(date) || todo.getTargetDate().equals(date.minusDays(1))) { // 당일, 혹은 그 전날의 todo에 대해...
+
+                    HomeTodoModel todoModel = new HomeTodoModel(); // HomeTodoModel 객체
+                    todoModel.setIdx(todo.getIdx()); // HomeTodoModel - (1) idx
+                    todoModel.setContent(todo.getContent()); // HomeTodoModel - (2) content
+                    LocalTime totalTm = LocalTime.of(0, 0);
+
+                    for(TodoTimerHistoryEntity timer : todo.getTodoTimerHistoryEntities()) {
+
+                        // HomeCategoryModel의 투두 배열에 들어갈 totalTm
+                        totalTm = totalTm.plus(Duration.between(LocalTime.MIN, timer.getTotalTm()));
+
+                        // HomeTimerHistoryModel의 타임히스토리 배열
+                        HomeTimerHistoryModel timerHistoryModel = new HomeTimerHistoryModel(); // HomeTimerHistoryModel 객체
+
+                        LocalDate startDate = timer.getHistoryStartDt().toLocalDate();
+                        LocalDate endDate = timer.getHistoryEndDt().toLocalDate();
+
+                        if(startDate.equals(date) && endDate.equals(date)) { // 1. 기준 날짜 시작 & 끝
+                            timerHistoryModel.setStartTm(timer.getHistoryStartDt().toLocalTime());
+                            timerHistoryModel.setEndTm(timer.getHistoryEndDt().toLocalTime());
+                        }
+                        else if(startDate.isBefore(date) && endDate.equals(date)) { // 1. 기준 전날 시작, 기준 날짜 끝
+                            timerHistoryModel.setStartTm(LocalTime.MIN); // 시작 - 0시 0분으로 줌
+                            timerHistoryModel.setEndTm(timer.getHistoryEndDt().toLocalTime());
+                        }
+                        else if(startDate.equals(date) && endDate.isAfter(date)) { // 2. 기준 날짜 시작, 기준 다음날 끝
+                            timerHistoryModel.setStartTm(timer.getHistoryStartDt().toLocalTime());
+                            timerHistoryModel.setEndTm(LocalTime.MAX); // 끝 - 23시 59분으로 줌
+                        }
+                        else {
+                            continue; // 그외에는 이 타이머 히스토리 스킵
+                        }
+
+                        // 스킵되지 않았다면 mainColor 정보 추가해서 HomeTimerHistoryModel 배열에 추가
+                        timerHistoryModel.setMainColor(mainColor);
+                        timerHistoryList.add(timerHistoryModel);
+
+                    }
+                    todoModel.setTodoTotalTm(totalTm); // HomeTodoModel - (3) todoTotalTm
+                    todoModelList.add(todoModel); // HomeTodoModel 배열 추가
+
+                }
+
+            }
+
+            categoryModel.setTodoList(todoModelList);
+            categoryList.add(categoryModel);
+        }
+
+        GetHomeRS result = new GetHomeRS();
+        result.setDdayList(ddayList);
+        result.setCategoryList(categoryList);
+        result.setTimerHistoryList(timerHistoryList);
+
+        return result;
+    }
 
     /**
      * 새로운 루틴 등록 (투두 목록 생성)
@@ -358,72 +430,31 @@ public class TodoRoutineService {
 
     /**
      * 개인 카테고리 및 TODO_ 조회 
-     * @param usersEntity
-     * @return
+     * @param usersEntity UsersEntity
+     * @return HomeCategoryTodoModel
      */
-    private List<GetCategoryModel> getMyCategoryList(UsersEntity usersEntity, GetHomeTodoRQ rq){
+    private List<HomeCategoryTodoModel> getMyCategoryList(UsersEntity usersEntity){
 
         if(usersEntity == null){
             usersEntity = userUtil.getUsersEntity();
         }
 
-        // TODO: 홈화면이라 지금 안쓰고 있지만 쓰려면 고쳐야 할 것 - RoutineYn boolean 필드인데 불필요함. routine 필드 null인지 체크하게 해
-        // GetTodoModel과 todoQueryRepository도 수정이 필요함
         return categoryRepository.findByUsersEntity(usersEntity).stream()
-            .map(entity -> {
-                List<GetTodoModel> todoList = todoQueryRepository.findByCategoryAndDate(entity, rq.getDate()).stream()
-                    .filter(todo -> {
-                        // TodoData가 없는데 Routine만 fasle가 떨어질 수 있음
-                        if(todo.getIdx() == null) return false;
-                        
-                        // 루틴 일 경우 금일의 루틴이 아니면 필터함
-                        if(todo.getRoutineYn()){
-    
-                            CycleType cycleType = todo.getCycleType();
-                            List<Byte> clcyeValue = new ArrayList<>();
+                .map(category -> {
 
-                            // 사이클 벨류가 없는경우가 있음, 사이클 타입이 매일인경우
-                            if(todo.getCycleValue() != null && !todo.getCycleValue().isBlank()){
-                                // 사이클 밸류를 , 로 구분자로 지었기 떄문에 , 를 기준으로 List를 만듬
-                                clcyeValue.addAll(
-                                    Arrays.asList(todo.getCycleValue().split(",")).stream()
-                                    .map(Byte::parseByte)
-                                    .toList()
-                                );
-                            }
-    
-                            validationRoutineCycleType(cycleType, clcyeValue);
+                    HomeCategoryTodoModel categoryTodoModel = new HomeCategoryTodoModel();
+                    categoryTodoModel.setIdx(category.getIdx());
+                    categoryTodoModel.setTitle(category.getTitle());
+                    categoryTodoModel.setMainColor(category.getMainColor());
+                    categoryTodoModel.setPublicStatus(category.getPublicStatus());
+                    categoryTodoModel.setTodoList(category.getTodoEntities());
 
-                            switch (cycleType) {
-                                case EVERY_DAY:
-                                    return true;
-                                case EVERY_MONTH:
-                                    Integer todayValue = LocalDate.now().getDayOfMonth();
-                                    return clcyeValue.contains(todayValue.byteValue());
-                                case EVERY_WEEK:
-                                    Integer todayWeekValue = LocalDate.now().getDayOfWeek().getValue();
-                                    return clcyeValue.contains(todayWeekValue.byteValue());
-                            }  
-                        } 
-                        // 루틴이 아니면 Filter X
-                        return true;
+                    return categoryTodoModel;
+                })
+                .collect(Collectors.toList());
 
-                    })
-                    .toList();
-
-                GetCategoryModel category = new GetCategoryModel();
-                category.setIdx(entity.getIdx());
-                category.setTitle(entity.getTitle());
-                category.setMainColor(entity.getMainColor());
-                category.setCreateDt(entity.getCreateDt());
-                category.setUpdateDt(entity.getUpdateDt());
-                category.setTodoList(todoList);
-
-                return category;
-            })
-            .filter(model -> !model.getTodoList().isEmpty())
-            .toList();
     }
+
 
     /**
      * TODO_ 데이터 삭제
