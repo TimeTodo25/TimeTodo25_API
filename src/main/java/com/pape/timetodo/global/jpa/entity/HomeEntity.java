@@ -1,6 +1,7 @@
 package com.pape.timetodo.global.jpa.entity;
 
 
+import com.pape.timetodo.global.constant.MoodType;
 import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,9 +31,10 @@ public class HomeEntity {
     @Comment(value = "오늘 날짜")
     private LocalDate todayDate; // 오늘 날짜
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "MOOD", nullable = false)
     @Comment(value = "오늘의 기분")
-    private String mood; // 기분
+    private MoodType mood; // 기분
 
     @Column(name = "GOAL", nullable = false)
     @Comment(value = "오늘의 목표")

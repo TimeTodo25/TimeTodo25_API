@@ -26,7 +26,7 @@ public class QHomeEntity extends EntityPathBase<HomeEntity> {
 
     public final NumberPath<Long> idx = createNumber("idx", Long.class);
 
-    public final StringPath mood = createString("mood");
+    public final EnumPath<com.pape.timetodo.global.constant.MoodType> mood = createEnum("mood", com.pape.timetodo.global.constant.MoodType.class);
 
     public final ComparablePath<Character> status = createComparable("status", Character.class);
 
