@@ -1,9 +1,6 @@
 package com.pape.timetodo.domain.main.controller;
 
-import com.pape.timetodo.domain.main.model.dday.RegisterDdayRQ;
-import com.pape.timetodo.domain.main.model.dday.RegisterDdayRS;
-import com.pape.timetodo.domain.main.model.dday.UpdateDdayRQ;
-import com.pape.timetodo.domain.main.model.dday.UpdateDdayRS;
+import com.pape.timetodo.domain.main.model.dday.*;
 import com.pape.timetodo.domain.main.service.DdayService;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -54,32 +51,32 @@ public class DdayController {
         return ResponseEntity.ok().body(result);
     }
 
-//    /**
-//     * 내 디데이 조회
-//     * @return
-//     */
-//    @GetMapping("/my")
-//    @Operation(summary = "내 디데이 조회", description = "내가 만든 디데이를 조회합니다.")
-//    public ResponseEntity<MyDdayRS> getMyDday(){
-//
-//        MyDdayRS result = ddayService.getMyDday();
-//
-//        return ResponseEntity.ok().body(result);
-//    }
-//
-//    /**
-//     * 디데이 단건 상세 조회
-//     * @param idx Long
-//     * @return GetDdayDetailRS
-//     */
-//    @GetMapping("/detail/{idx}")
-//    @Operation(summary = "디데이 데이터 단건조회", description = "디데이 단건 데이터를 조회합니다.")
-//    public ResponseEntity<GetDdayDetailRS> detailDday(@PathVariable(name = "idx") @Parameter(name="idx", description = "디데이 IDX", in = ParameterIn.PATH, example = "1") Long idx){
-//
-//        GetDdayDetailRS result = ddayService.detailDday(idx);
-//
-//        return ResponseEntity.ok().body(result);
-//    }
+    /**
+     * 내 디데이 조회
+     * @return
+     */
+    @GetMapping("/my")
+    @Operation(summary = "내 디데이 조회", description = "내가 만든 디데이를 조회합니다.")
+    public ResponseEntity<MyDdayRS> getMyDday(){
+
+        MyDdayRS result = ddayService.getMyDday();
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * 디데이 단건 상세 조회
+     * @param idx Long
+     * @return GetDdayDetailRS
+     */
+    @GetMapping("/detail/{idx}")
+    @Operation(summary = "디데이 데이터 단건조회", description = "디데이 단건 데이터를 조회합니다.")
+    public ResponseEntity<GetDdayDetailRS> detailDday(@PathVariable(name = "idx") @Parameter(name="idx", description = "디데이 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        GetDdayDetailRS result = ddayService.detailDday(idx);
+
+        return ResponseEntity.ok().body(result);
+    }
 
     /**
      * 디데이 삭제

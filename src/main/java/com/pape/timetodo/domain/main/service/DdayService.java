@@ -1,9 +1,6 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.dday.RegisterDdayRQ;
-import com.pape.timetodo.domain.main.model.dday.RegisterDdayRS;
-import com.pape.timetodo.domain.main.model.dday.UpdateDdayRQ;
-import com.pape.timetodo.domain.main.model.dday.UpdateDdayRS;
+import com.pape.timetodo.domain.main.model.dday.*;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -18,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -102,5 +101,45 @@ public class DdayService {
             ddayRepository.save(ddayEntity); // JPA 더티체킹을 믿지만, 만일에 대비해서
         }
     }
-    
+
+    /**
+     * 내 디데이 목록 조회
+     * @return MyDdayRS
+     */
+    public MyDdayRS getMyDday() {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        List<DdayEntity> ddayList = ddayRepository.findByUsersEntity(usersEntity);
+        MyDdayRS result = new MyDdayRS();
+        result.setDdayList(ddayList.stream().map(dday -> {
+            MyDdayRS.DdayModel model = new MyDdayRS.DdayModel();
+            model.setContent(dday.getContent());
+            model.setDdayDate(dday.getTargetDt());
+            return model;
+        })
+        .collect(Collectors.toList()));
+
+        return result;
+    }
+
+    /**
+     * 디데이 단건 상세 조회
+     * @param idx Long
+     * @return GetDdayDetailRS
+     */
+    public GetDdayDetailRS detailDday(Long idx) {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        DdayEntity dday = ddayRepository.findByIdxAndUsersEntity(idx, usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+
+        GetDdayDetailRS result = new GetDdayDetailRS();
+        result.setContent(dday.getContent());
+        result.setDdayDate(dday.getTargetDt());
+        result.setTargetDelYn(dday.getTargetDelYn());
+
+        return result;
+    }
 }
