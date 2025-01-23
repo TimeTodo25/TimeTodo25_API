@@ -2,6 +2,8 @@ package com.pape.timetodo.domain.main.controller;
 
 import com.pape.timetodo.domain.main.model.category.*;
 import com.pape.timetodo.domain.main.service.CategoryService;
+import com.pape.timetodo.global.exception.AppException;
+import com.pape.timetodo.global.exception.ExceptionCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -76,4 +78,20 @@ public class CategoryController {
         return ResponseEntity.ok().body(result);
     }
 
+    /**
+     * 카테고리 삭제
+     * @param idx Long
+     */
+    @DeleteMapping("/{idx}/delete")
+    @Operation(summary = "카테고리 삭제", description = "카테고리 데이터를 삭제합니다. [논리삭제]")
+    public ResponseEntity<Void> deleteCategory(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "삭제할 카테고리 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        if(idx == null){
+            throw new AppException(ExceptionCode.NON_VALID_PARAMETER);
+        }
+
+        categoryService.deleteCategory(idx);
+
+        return ResponseEntity.ok().build();
+    }
 }

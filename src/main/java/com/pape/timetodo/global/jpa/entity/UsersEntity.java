@@ -90,6 +90,9 @@ public class UsersEntity implements UserDetails{
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
     private List<CategoryEntity> categoryEntities;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    private List<HomeEntity> homeEntities;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id.username")
     private List<FriendEntity> friendEntities;
 

@@ -1,5 +1,7 @@
 package com.pape.timetodo.domain.main.controller;
 
+import com.pape.timetodo.domain.main.model.home.GetHomeRQ;
+import com.pape.timetodo.domain.main.model.home.GetHomeRS;
 import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.service.TodoRoutineService;
 import com.pape.timetodo.global.exception.AppException;
@@ -37,17 +39,17 @@ public class TodoController {
         return ResponseEntity.ok().body(result);
     }
 
-//    /**
-//     * 홈화면 :: 오늘 TodoList 조회
-//     */
-//    @GetMapping("/home")
-//    @Operation(summary = "홈화면 데이터 조회[투두, 디데이]", description = "홈화면 데이터를 조회합니다.")
-//    public ResponseEntity<GetHomeTodoRS> getHomeTodo(@Valid GetHomeTodoRQ rq){
-//
-//        GetHomeTodoRS result = todoRoutineService.getHomeTodo(rq);
-//
-//        return ResponseEntity.ok().body(result);
-//    }
+    /**
+     * 홈화면 :: 오늘 TodoList 조회
+     */
+    @GetMapping("/home")
+    @Operation(summary = "홈화면 데이터 조회[투두, 디데이]", description = "홈화면 데이터를 조회합니다.")
+    public ResponseEntity<GetHomeRS> getHome(@Valid GetHomeRQ rq){
+
+        GetHomeRS result = todoRoutineService.getHomeTodo(rq);
+
+        return ResponseEntity.ok().body(result);
+    }
 
     /**
      * Todo_ 삭제

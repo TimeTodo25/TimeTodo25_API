@@ -1,9 +1,12 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.dday.RegisterDdayRS;
-import com.pape.timetodo.domain.main.model.dday.registerDdayRQ;
+import com.pape.timetodo.domain.main.model.dday.*;
+import com.pape.timetodo.global.constant.StatusType;
+import com.pape.timetodo.global.exception.AppException;
+import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.DdayEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
+import com.pape.timetodo.global.jpa.repository.DdayQueryRepository;
 import com.pape.timetodo.global.jpa.repository.DdayRepository;
 import com.pape.timetodo.global.util.UserUtil;
 import lombok.RequiredArgsConstructor;
@@ -11,14 +14,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class DdayService {
 
+    private final UserUtil userUtil;
+
     private final DdayRepository ddayRepository;
 
-    private final UserUtil userUtil;
+    private final DdayQueryRepository ddayQueryRepository;
 
     /**
      * 디데이 등록
@@ -26,7 +36,7 @@ public class DdayService {
      * @return RegisterDdayRS
      */
     @Transactional
-    public RegisterDdayRS registerDday(registerDdayRQ rq) {
+    public RegisterDdayRS registerDday(RegisterDdayRQ rq) {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
@@ -42,6 +52,93 @@ public class DdayService {
         RegisterDdayRS result = new RegisterDdayRS();
         result.setDdayIdx(ddayEntity.getIdx());
         result.setUpdateDt(ddayEntity.getUpdateDt());
+
+        return result;
+    }
+
+
+    /**
+     * 디데이 수정
+     * @param rq UpdateDdayRQ
+     * @return UpdateDdayRS
+     */
+    @Transactional
+    public UpdateDdayRS updateDday(UpdateDdayRQ rq) {
+
+        DdayEntity ddayEntity = ddayQueryRepository.findByIdAndUsersEntity(rq.getIdx(), userUtil.getUsersEntity());
+
+        if(ddayEntity == null) throw new AppException(ExceptionCode.DATA_NOT_FIND);
+
+        if(rq.getContent() != null) ddayEntity.setContent(rq.getContent());
+        if(rq.getTargetDt() != null) ddayEntity.setTargetDt(rq.getTargetDt());
+
+        ddayEntity.setUpdateDt(LocalDateTime.now());
+        ddayRepository.save(ddayEntity);
+
+        UpdateDdayRS result = new UpdateDdayRS();
+        result.setUpdateDt(ddayEntity.getUpdateDt());
+
+        return result;
+    }
+
+
+    /**
+     * 디데이 삭제 [논리 삭제]
+     * @param idx Long
+     */
+    @Transactional
+    public void deleteDday(Long idx) {
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        Optional<DdayEntity> ddayEntityWrapper = ddayRepository.findByIdxAndUsersEntity(idx, usersEntity);
+
+        if(ddayEntityWrapper.isPresent()){
+
+            DdayEntity ddayEntity = ddayEntityWrapper.get();
+            ddayEntity.setDeleteDt(LocalDateTime.now());
+            ddayEntity.setStatus(StatusType.DELETED.getValue());
+
+            ddayRepository.save(ddayEntity); // JPA 더티체킹을 믿지만, 만일에 대비해서
+        }
+    }
+
+    /**
+     * 내 디데이 목록 조회
+     * @return MyDdayRS
+     */
+    public MyDdayRS getMyDday() {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        List<DdayEntity> ddayList = ddayRepository.findByUsersEntity(usersEntity);
+        MyDdayRS result = new MyDdayRS();
+        result.setDdayList(ddayList.stream().map(dday -> {
+            MyDdayRS.DdayModel model = new MyDdayRS.DdayModel();
+            model.setContent(dday.getContent());
+            model.setDdayDate(dday.getTargetDt());
+            return model;
+        })
+        .collect(Collectors.toList()));
+
+        return result;
+    }
+
+    /**
+     * 디데이 단건 상세 조회
+     * @param idx Long
+     * @return GetDdayDetailRS
+     */
+    public GetDdayDetailRS detailDday(Long idx) {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        DdayEntity dday = ddayRepository.findByIdxAndUsersEntity(idx, usersEntity)
+                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+
+        GetDdayDetailRS result = new GetDdayDetailRS();
+        result.setContent(dday.getContent());
+        result.setDdayDate(dday.getTargetDt());
+        result.setTargetDelYn(dday.getTargetDelYn());
 
         return result;
     }

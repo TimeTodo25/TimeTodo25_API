@@ -1,33 +1,32 @@
 package com.pape.timetodo.domain.account.service;
 
-import java.util.Optional;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.pape.timetodo.domain.account.model.user.NickCheckRQ;
 import com.pape.timetodo.domain.account.model.user.SnsLoginRQ;
 import com.pape.timetodo.domain.account.model.user.SnsLoginRS;
 import com.pape.timetodo.domain.account.model.user.UserRegisterRQ;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity;
-import com.pape.timetodo.global.jpa.entity.MailEntity;
-import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity.AuthorityId;
+import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
+import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
 import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import com.pape.timetodo.global.security.JwtTokenProvider;
 import com.pape.timetodo.global.security.model.TokenModel;
 import com.pape.timetodo.global.security.model.UserType;
 import com.pape.timetodo.global.util.UserUtil;
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -145,5 +144,8 @@ public class UserService {
         return result;
     }
 
+    public boolean isDuplicated(NickCheckRQ rq) {
+        return usersRepository.findById(rq.getNickname()).isPresent();
+    }
 
 }

@@ -8,18 +8,17 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
-public class registerDdayRQ {
+public class UpdateDdayRQ {
+    @NotNull
+    @Schema(description = "디데이 IDX", example = "1", implementation = Long.class)
+    private Long idx;
 
     @NotNull
-    @Schema(description = "디데이 내용", example = "퇴사", implementation = Long.class)
+    @Schema(description = "디데이 내용", example = "퇴사", implementation = String.class)
     private String content;
 
     @NotNull
     @Schema(description = "디데이 지정일", example = "2024-12-30", implementation = LocalDate.class)
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate targetDt;
-
-    @NotNull
-    @Schema(description = "삭제유무", example = "true", implementation = Boolean.class)
-    private Boolean targetDelYn;
 }
