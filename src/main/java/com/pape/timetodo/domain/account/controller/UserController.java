@@ -1,21 +1,20 @@
 package com.pape.timetodo.domain.account.controller;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.pape.timetodo.domain.account.model.user.NickCheckRQ;
 import com.pape.timetodo.domain.account.model.user.SnsLoginRQ;
 import com.pape.timetodo.domain.account.model.user.SnsLoginRS;
 import com.pape.timetodo.domain.account.model.user.UserRegisterRQ;
 import com.pape.timetodo.domain.account.service.UserService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
@@ -50,6 +49,20 @@ public class UserController {
     public ResponseEntity<SnsLoginRS> snsLogin(@Valid @RequestBody SnsLoginRQ rq){
 
         SnsLoginRS result = accountUserService.snsLogin(rq);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
+     * 사용자 이름 중복 확인
+     * @param rq NickCheckRQ
+     * @return Boolean
+     */
+    @PostMapping("/nickname/check")
+    @Operation(summary = "닉네임 중복 체크 [중복 = True, 중복아님 = False]", description = "이름 중복 확인기능 입니다.")
+    public ResponseEntity<Boolean> isDuplicated(@Valid @RequestBody NickCheckRQ rq) {
+
+        Boolean result = accountUserService.isDuplicated(rq);
 
         return ResponseEntity.ok().body(result);
     }
