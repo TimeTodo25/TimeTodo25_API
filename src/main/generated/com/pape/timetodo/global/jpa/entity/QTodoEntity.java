@@ -34,6 +34,8 @@ public class QTodoEntity extends EntityPathBase<TodoEntity> {
 
     public final NumberPath<Long> idx = createNumber("idx", Long.class);
 
+    public final NumberPath<Integer> progressStatus = createNumber("progressStatus", Integer.class);
+
     public final QRoutineEntity routineEntity;
 
     public final TimePath<java.time.LocalTime> startTargetTm = createTime("startTargetTm", java.time.LocalTime.class);

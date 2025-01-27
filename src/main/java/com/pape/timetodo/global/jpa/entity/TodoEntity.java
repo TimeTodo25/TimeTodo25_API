@@ -1,5 +1,6 @@
 package com.pape.timetodo.global.jpa.entity;
 
+import com.pape.timetodo.global.constant.ProgressStatus;
 import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -60,6 +61,10 @@ public class TodoEntity {
     @Comment(value = "상태")
     private Character status; // 상태 - 삭제여부 등
 
+    @Column(name = "PROGRESS_STATUS", nullable = false)
+    @Comment(value = "진행도")
+    private Integer progressStatus; // 진행도
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "CATEGORY_IDX", referencedColumnName = "IDX")
     @Comment(value = "카테고리 IDX")
@@ -84,5 +89,6 @@ public class TodoEntity {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
         this.status = StatusType.NORMAL.getValue();
+        this.progressStatus = ProgressStatus._0.getValue();
     }
 }
