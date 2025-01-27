@@ -636,16 +636,10 @@ public class TodoRoutineService {
         if(rq.getContent() != null) {
             String content = rq.getContent();
 
-            // 투두 전제 내용 수정
-            List<TodoEntity> todoList = routineEntity.getTodoEntities();
+            // 루틴에 속한 투두 전체 내용 수정
+            List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
             for(TodoEntity todo : todoList) {
-                if(todo.getTargetDate().isBefore(LocalDate.now())) {
-                    continue; // 이미 날짜가 지난 건 스킵
-                } else if(todo.getStatus() == StatusType.UPDATED.getValue()) {
-                    continue; // 이미 개별 수정한 건 스킵
-                } else {
-                    todo.setContent(content);
-                }
+                todo.setContent(content);
             }
             todoRepository.saveAll(todoList);
         }
