@@ -18,6 +18,9 @@ public class UpdateRoutineRQ {
     @Schema(description = "루틴 IDX", example = "1", implementation = Long.class)
     private Long routineIdx;
 
+    @Schema(description = "루틴/투두 내용", example = "수학 문제 풀기 3p", implementation = String.class)
+    private String content; // 내용
+
     @Schema(description = "반복타입[EVERY_DAY ,EVERY_WEEK, EVERY_MONTH]", example = "EVERY_WEEK", implementation = CycleType.class)
     private CycleType cycleType;
 

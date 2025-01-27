@@ -18,6 +18,9 @@ public class UpdateTodoRQ {
     @Schema(description = "투두 내용", example = "스웨거UI 문서화해주기", implementation = String.class)
     private String content;
 
+    @Schema(description = "카테고리 IDX", example = "1", implementation = Long.class)
+    private Long categoryIdx;
+
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Schema(description = "투두 지정일", example = "[yyyy-MM-dd] 2024-10-30", implementation = LocalDate.class)
     private LocalDate targetDate;

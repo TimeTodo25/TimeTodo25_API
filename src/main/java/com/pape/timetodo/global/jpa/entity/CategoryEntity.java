@@ -1,11 +1,13 @@
 package com.pape.timetodo.global.jpa.entity;
 
+import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "CATEGORY")
@@ -53,6 +55,9 @@ public class CategoryEntity {
     @OneToMany(mappedBy = "categoryEntity")
     private List<TodoEntity> todoEntities;
 
+    @OneToMany(mappedBy = "categoryEntity")
+    private List<RoutineEntity> routineEntities;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME", nullable = false)
     @Comment(value = "작성자")
@@ -62,6 +67,7 @@ public class CategoryEntity {
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 
     @Getter
@@ -73,5 +79,18 @@ public class CategoryEntity {
         ;
 
         private final String desc;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CategoryEntity that = (CategoryEntity) o;
+        return Objects.equals(idx, that.idx);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(idx);
     }
 }

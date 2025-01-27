@@ -18,7 +18,7 @@ public class RegisterRoutineRQ {
     private Long todoIdx;
 
     @NotNull
-    @Schema(description = "투두 내용", example = "스웨거UI 문서화해주기", implementation = String.class)
+    @Schema(description = "투두/루틴 내용", example = "스웨거UI 문서화해주기", implementation = String.class)
     private String content;
 
     @NotNull

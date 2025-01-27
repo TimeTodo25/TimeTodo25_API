@@ -1,5 +1,6 @@
 package com.pape.timetodo.domain.main.service;
 
+import com.pape.timetodo.domain.main.model.GetCategoryRoutineModel;
 import com.pape.timetodo.domain.main.model.GetRoutineModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
 import com.pape.timetodo.domain.main.model.home.*;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -220,6 +222,7 @@ public class TodoRoutineService {
         List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
 
         RoutineEntity routineEntity = RoutineEntity.builder()
+                .content(rq.getContent())
                 .cycleType(rq.getCycleType())
                 .cycleValue(cycleValue.toString())
                 .rm(rm)
@@ -227,6 +230,8 @@ public class TodoRoutineService {
                 .usersEntity(usersEntity)
                 .startDt(rq.getStartDt())
                 .endDt(rq.getEndDt())
+                .startTargetTm(rq.getStartTargetTm())
+                .endTargetTm(rq.getEndTargetTm())
                 .build();
 
         routineEntity = routineRepository.save(routineEntity);
@@ -276,6 +281,7 @@ public class TodoRoutineService {
         List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
 
         RoutineEntity routineEntity = RoutineEntity.builder()
+            .content(rq.getContent())
             .cycleType(rq.getCycleType())
             .cycleValue(cycleValue.toString())
             .rm(rm)
@@ -283,6 +289,8 @@ public class TodoRoutineService {
             .usersEntity(usersEntity)
             .startDt(rq.getStartDt())
             .endDt(rq.getEndDt())
+            .startTargetTm(rq.getStartTargetTm())
+            .endTargetTm(rq.getEndTargetTm())
             .build();
 
         routineEntity = routineRepository.save(routineEntity);
@@ -484,14 +492,36 @@ public class TodoRoutineService {
     public UpdateTodoRS updateTodo(UpdateTodoRQ rq) {
 
         TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
+        UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        if(rq.getContent() != null) todoEntity.setContent(rq.getContent());
-        if(rq.getTargetDate() != null) todoEntity.setTargetDate(rq.getTargetDate());
-        if(rq.getStartTargetTm() != null) todoEntity.setStartTargetTm(rq.getStartTargetTm());
-        if(rq.getEndTargetTm() != null) todoEntity.setEndTargetTm(rq.getEndTargetTm());
+        if(rq.getContent() != null) {
+            todoEntity.setContent(rq.getContent());
+            todoEntity.setRoutineEntity(null);
+        }
+        if(rq.getCategoryIdx() != null) {
+            todoEntity.setCategoryEntity(categoryRepository.findByIdxAndUsersEntity(rq.getCategoryIdx(), usersEntity).orElseThrow(
+                    () -> new AppException(ExceptionCode.DATA_NOT_FIND, "카테고리 없음"))
+            );
+            todoEntity.setRoutineEntity(null);
+        }
 
-        // 투두 개별 수정하면 기존 루틴에서 제외됨 // TODO: 카테고리 수정이나, 상태 변경의 경우에는 속한 루틴 값 유지해야 함
-        if(todoEntity.getRoutineEntity() != null) todoEntity.setRoutineEntity(null);
+        boolean isUpdate = false;
+        if(rq.getTargetDate() != null) {
+            todoEntity.setTargetDate(rq.getTargetDate());
+            isUpdate = true;
+        }
+        if(rq.getStartTargetTm() != null) {
+            todoEntity.setStartTargetTm(rq.getStartTargetTm());
+            isUpdate = true;
+        }
+        if(rq.getEndTargetTm() != null) {
+            todoEntity.setEndTargetTm(rq.getEndTargetTm());
+            isUpdate = true;
+        }
+        // 위 셋 중 하나라도 수정되었다면
+        if(todoEntity.getRoutineEntity() != null && isUpdate) {
+            todoEntity.setStatus(StatusType.UPDATED.getValue());
+        }
 
         todoEntity.setUpdateDt(LocalDateTime.now());
         todoRepository.save(todoEntity);
@@ -602,6 +632,18 @@ public class TodoRoutineService {
 
         RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
 
+        // 내용 변경
+        if(rq.getContent() != null) {
+            String content = rq.getContent();
+
+            // 루틴에 속한 투두 전체 내용 수정
+            List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
+            for(TodoEntity todo : todoList) {
+                todo.setContent(content);
+            }
+            todoRepository.saveAll(todoList);
+        }
+
         // Cycle 타입 변경
         if(rq.getCycleType() != null) {
             if(rq.getCycleValue() == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "루틴 타입이 변경되면 루틴 지정일도 같이 와야합니다.");
@@ -668,49 +710,79 @@ public class TodoRoutineService {
         return result;
     }
 
+
+    /**
+     * 루틴 목록 조회
+     * @return GetMyRoutineRS
+     */
     public GetMyRoutineRS getMyRoutineList() {
+        // 1. 현재 로그인한 사용자 정보 가져오기
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        List<GetRoutineModel> routineList = routineQueryRepository.findMyRoutineByUsresEntity(usersEntity).stream()
-                .map(entity -> {
-                    GetRoutineModel result = new GetRoutineModel();
-                    result.setIdx(entity.getIdx());
-                    result.setCycleType(entity.getCycleType());
-                    result.setCycleValue(entity.getCycleValue());
-                    result.setRm(entity.getRm());
-                    result.setStartDt(entity.getStartDt());
-                    result.setEndDt(entity.getEndDt());
+        // 2. 모든 루틴을 한 번에 가져오기 (N+1 문제 방지)
+        List<RoutineEntity> allRoutines = routineQueryRepository.findMyRoutinesByUsresEntity(usersEntity);
 
-                    return result;
+        // 3. 루틴 데이터를 카테고리별로 그룹화 -> key를 Category로 하기 위해 CategoryEntity의 equals와 hashCode 재정의(오버라이드)함
+        Map<CategoryEntity, List<RoutineEntity>> categoryRoutineMap = allRoutines.stream()
+                .collect(Collectors.groupingBy(RoutineEntity::getCategoryEntity));
+
+        // 4. 루틴 목록이 하나 이상인 카테고리만 필터링
+        List<GetCategoryRoutineModel> categoryRoutineList = categoryRoutineMap.entrySet().stream()
+                .filter(entry -> !entry.getValue().isEmpty())
+                .map(entry -> {
+                    // 카테고리 모델 생성
+                    GetCategoryRoutineModel categoryModel = new GetCategoryRoutineModel();
+                    categoryModel.setCategoryIdx(entry.getKey().getIdx());
+                    categoryModel.setTitle(entry.getKey().getTitle());
+                    categoryModel.setMainColor(entry.getKey().getMainColor());
+                    categoryModel.setPublicStatus(entry.getKey().getPublicStatus());
+                    categoryModel.setRoutineList(
+                            entry.getValue().stream()
+                                    .map(routine -> {
+                                        // 루틴 모델 변환
+                                        GetRoutineModel routineModel = new GetRoutineModel();
+                                        routineModel.setRoutineIdx(routine.getIdx());
+                                        routineModel.setContent(routine.getContent());
+                                        routineModel.setCycleType(routine.getCycleType());
+                                        routineModel.setCycleValue(routine.getCycleValue());
+                                        routineModel.setRm(routine.getRm());
+                                        routineModel.setStartDt(routine.getStartDt());
+                                        routineModel.setEndDt(routine.getEndDt());
+                                        return routineModel;
+                                    })
+                                    .toList()
+                    );
+                    return categoryModel;
                 })
                 .toList();
 
+        // 5. 결과 객체 생성 및 반환
         GetMyRoutineRS result = new GetMyRoutineRS();
-        result.setRoutineList(routineList);
+        result.setCategoryRoutineList(categoryRoutineList);
 
         return result;
     }
 
+
+    /**
+     * 루틴 단건 상세 조회
+     * @param idx Long
+     * @return GetRoutineDetailRS
+     */
     public GetRoutineDetailRS detailRoutine(Long idx) {
 
         RoutineEntity routineEntity = this.getMyRoutineData(idx);
 
         GetRoutineDetailRS result = new GetRoutineDetailRS();
         result.setIdx(routineEntity.getIdx());
-        result.setCycleType(routineEntity.getCycleType());
-        result.setCycleValue(result.getCycleValue());
+        result.setContent(routineEntity.getContent());
         result.setRm(result.getRm());
         result.setStartDt(routineEntity.getStartDt());
         result.setEndDt(routineEntity.getEndDt());
-        // Todo: 한 루틴에 속한 투두의 content는 모두 같지 않나? 시작, 끝 시간도 그런 것 같은데...? 차라리 todo 개수를 반환하는 게...
-        result.setTodoList(routineEntity.getTodoEntities().stream().map(todo -> {
-            GetTodoModel model = new GetTodoModel();
-            model.setIdx(todo.getIdx());
-            model.setContent(todo.getContent());
-            model.setTargetDate(todo.getTargetDate());
-            // TODO: totalTime이 필요한가? 실행 전의 투두는 어차피 0인데
-            return model;
-        }).collect(Collectors.toList()));
+        result.setStartTm(routineEntity.getStartTargetTm());
+        result.setEndTm(routineEntity.getEndTargetTm());
+        result.setCycleType(routineEntity.getCycleType());
+        result.setCycleValue(result.getCycleValue());
 
         return result;
     }

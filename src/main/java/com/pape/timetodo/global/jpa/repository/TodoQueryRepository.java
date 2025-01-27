@@ -90,4 +90,28 @@ public class TodoQueryRepository {
                 .fetch();
     }
 
+
+    /**
+     * 삭제되지 않았고 개별 수정되지 않은 투두 목록 조회
+     * @param routineEntity RoutineEntity
+     * @return List<TodoEntity>
+     */
+    public List<TodoEntity> findTodoListByRoutine(RoutineEntity routineEntity) {
+        QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
+
+        LocalDate today = LocalDate.now();
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(qTodoEntity.routineEntity.eq(routineEntity)); // 해당 루틴에 속한 투두
+        builder.and(qTodoEntity.status.notIn(StatusType.DELETED.getValue(), StatusType.UPDATED.getValue())); // 상태가 D나 Y가 아닌 것
+        builder.and(qTodoEntity.targetDate.goe(today)); // 타겟 날짜가 오늘 이후인 것 (오늘 포함)
+
+        return query
+                .selectFrom(qTodoEntity)
+                .where(builder)
+                .orderBy(qTodoEntity.targetDate.asc()) // 타겟 날짜 기준으로 오름차순 정렬
+                .fetch();
+
+    }
+
 }

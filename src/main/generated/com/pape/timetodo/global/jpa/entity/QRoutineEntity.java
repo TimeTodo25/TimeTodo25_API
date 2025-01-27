@@ -22,6 +22,10 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public static final QRoutineEntity routineEntity = new QRoutineEntity("routineEntity");
 
+    public final QCategoryEntity categoryEntity;
+
+    public final StringPath content = createString("content");
+
     public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);
 
     public final EnumPath<RoutineEntity.CycleType> cycleType = createEnum("cycleType", RoutineEntity.CycleType.class);
@@ -32,11 +36,15 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public final DatePath<java.time.LocalDate> endDt = createDate("endDt", java.time.LocalDate.class);
 
+    public final TimePath<java.time.LocalTime> endTargetTm = createTime("endTargetTm", java.time.LocalTime.class);
+
     public final NumberPath<Long> idx = createNumber("idx", Long.class);
 
     public final StringPath rm = createString("rm");
 
     public final DatePath<java.time.LocalDate> startDt = createDate("startDt", java.time.LocalDate.class);
+
+    public final TimePath<java.time.LocalTime> startTargetTm = createTime("startTargetTm", java.time.LocalTime.class);
 
     public final ComparablePath<Character> status = createComparable("status", Character.class);
 
@@ -64,6 +72,7 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public QRoutineEntity(Class<? extends RoutineEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.categoryEntity = inits.isInitialized("categoryEntity") ? new QCategoryEntity(forProperty("categoryEntity"), inits.get("categoryEntity")) : null;
         this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
     }
 
