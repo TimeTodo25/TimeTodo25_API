@@ -12,7 +12,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class GetRoutineModel {
 
-    private Long idx;
+    private Long routineIdx;
+
+    private String content; // 내용
 
     private CycleType cycleType; // 반복 타입
 

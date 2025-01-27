@@ -77,6 +77,11 @@ public class RoutineEntity {
     private List<TodoEntity> todoEntities;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CATEGORY_IDX", referencedColumnName = "IDX")
+    @Comment(value = "카테고리 IDX")
+    private CategoryEntity categoryEntity; // 카테고리 Entity
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME", nullable = false)
     @Comment(value = "작성자")
     private UsersEntity usersEntity;

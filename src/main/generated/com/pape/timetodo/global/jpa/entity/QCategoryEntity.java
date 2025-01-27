@@ -32,6 +32,8 @@ public class QCategoryEntity extends EntityPathBase<CategoryEntity> {
 
     public final EnumPath<CategoryEntity.PublicStatus> publicStatus = createEnum("publicStatus", CategoryEntity.PublicStatus.class);
 
+    public final ListPath<RoutineEntity, QRoutineEntity> routineEntities = this.<RoutineEntity, QRoutineEntity>createList("routineEntities", RoutineEntity.class, QRoutineEntity.class, PathInits.DIRECT2);
+
     public final ComparablePath<Character> status = createComparable("status", Character.class);
 
     public final StringPath title = createString("title");

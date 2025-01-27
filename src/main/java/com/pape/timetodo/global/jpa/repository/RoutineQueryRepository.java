@@ -19,7 +19,7 @@ public class RoutineQueryRepository {
 
     private final JPAQueryFactory query;
 
-    public List<RoutineEntity> findMyRoutineByUsresEntity(UsersEntity usersEntity){
+    public List<RoutineEntity> findMyRoutinesByUsresEntity(UsersEntity usersEntity){
         QRoutineEntity qRoutineEntity = QRoutineEntity.routineEntity;
 
         BooleanBuilder builder = new BooleanBuilder();

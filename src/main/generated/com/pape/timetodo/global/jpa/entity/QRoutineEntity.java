@@ -22,6 +22,8 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public static final QRoutineEntity routineEntity = new QRoutineEntity("routineEntity");
 
+    public final QCategoryEntity categoryEntity;
+
     public final StringPath content = createString("content");
 
     public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);
@@ -70,6 +72,7 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
 
     public QRoutineEntity(Class<? extends RoutineEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
+        this.categoryEntity = inits.isInitialized("categoryEntity") ? new QCategoryEntity(forProperty("categoryEntity"), inits.get("categoryEntity")) : null;
         this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
     }
 

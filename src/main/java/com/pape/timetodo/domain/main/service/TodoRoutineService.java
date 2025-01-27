@@ -1,5 +1,6 @@
 package com.pape.timetodo.domain.main.service;
 
+import com.pape.timetodo.domain.main.model.GetCategoryRoutineModel;
 import com.pape.timetodo.domain.main.model.GetRoutineModel;
 import com.pape.timetodo.domain.main.model.GetTodoModel;
 import com.pape.timetodo.domain.main.model.home.*;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -690,29 +692,65 @@ public class TodoRoutineService {
         return result;
     }
 
+
+    /**
+     * 루틴 목록 조회
+     * @return GetMyRoutineRS
+     */
     public GetMyRoutineRS getMyRoutineList() {
+        // 1. 현재 로그인한 사용자 정보 가져오기
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        List<GetRoutineModel> routineList = routineQueryRepository.findMyRoutineByUsresEntity(usersEntity).stream()
-                .map(entity -> {
-                    GetRoutineModel result = new GetRoutineModel();
-                    result.setIdx(entity.getIdx());
-                    result.setCycleType(entity.getCycleType());
-                    result.setCycleValue(entity.getCycleValue());
-                    result.setRm(entity.getRm());
-                    result.setStartDt(entity.getStartDt());
-                    result.setEndDt(entity.getEndDt());
+        // 2. 모든 루틴을 한 번에 가져오기 (N+1 문제 방지)
+        List<RoutineEntity> allRoutines = routineQueryRepository.findMyRoutinesByUsresEntity(usersEntity);
 
-                    return result;
+        // 3. 루틴 데이터를 카테고리별로 그룹화 -> key를 Category로 하기 위해 CategoryEntity의 equals와 hashCode 재정의(오버라이드)함
+        Map<CategoryEntity, List<RoutineEntity>> categoryRoutineMap = allRoutines.stream()
+                .collect(Collectors.groupingBy(RoutineEntity::getCategoryEntity));
+
+        // 4. 루틴 목록이 하나 이상인 카테고리만 필터링
+        List<GetCategoryRoutineModel> categoryRoutineList = categoryRoutineMap.entrySet().stream()
+                .filter(entry -> !entry.getValue().isEmpty())
+                .map(entry -> {
+                    // 카테고리 모델 생성
+                    GetCategoryRoutineModel categoryModel = new GetCategoryRoutineModel();
+                    categoryModel.setCategoryIdx(entry.getKey().getIdx());
+                    categoryModel.setTitle(entry.getKey().getTitle());
+                    categoryModel.setMainColor(entry.getKey().getMainColor());
+                    categoryModel.setPublicStatus(entry.getKey().getPublicStatus());
+                    categoryModel.setRoutineList(
+                            entry.getValue().stream()
+                                    .map(routine -> {
+                                        // 루틴 모델 변환
+                                        GetRoutineModel routineModel = new GetRoutineModel();
+                                        routineModel.setRoutineIdx(routine.getIdx());
+                                        routineModel.setContent(routine.getContent());
+                                        routineModel.setCycleType(routine.getCycleType());
+                                        routineModel.setCycleValue(routine.getCycleValue());
+                                        routineModel.setRm(routine.getRm());
+                                        routineModel.setStartDt(routine.getStartDt());
+                                        routineModel.setEndDt(routine.getEndDt());
+                                        return routineModel;
+                                    })
+                                    .toList()
+                    );
+                    return categoryModel;
                 })
                 .toList();
 
+        // 5. 결과 객체 생성 및 반환
         GetMyRoutineRS result = new GetMyRoutineRS();
-        result.setRoutineList(routineList);
+        result.setCategoryRoutineList(categoryRoutineList);
 
         return result;
     }
 
+
+    /**
+     * 루틴 단건 상세 조회
+     * @param idx Long
+     * @return GetRoutineDetailRS
+     */
     public GetRoutineDetailRS detailRoutine(Long idx) {
 
         RoutineEntity routineEntity = this.getMyRoutineData(idx);
