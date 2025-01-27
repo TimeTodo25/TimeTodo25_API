@@ -220,6 +220,7 @@ public class TodoRoutineService {
         List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
 
         RoutineEntity routineEntity = RoutineEntity.builder()
+                .content(rq.getContent())
                 .cycleType(rq.getCycleType())
                 .cycleValue(cycleValue.toString())
                 .rm(rm)
@@ -227,6 +228,8 @@ public class TodoRoutineService {
                 .usersEntity(usersEntity)
                 .startDt(rq.getStartDt())
                 .endDt(rq.getEndDt())
+                .startTargetTm(rq.getStartTargetTm())
+                .endTargetTm(rq.getEndTargetTm())
                 .build();
 
         routineEntity = routineRepository.save(routineEntity);
@@ -276,6 +279,7 @@ public class TodoRoutineService {
         List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
 
         RoutineEntity routineEntity = RoutineEntity.builder()
+            .content(rq.getContent())
             .cycleType(rq.getCycleType())
             .cycleValue(cycleValue.toString())
             .rm(rm)
@@ -283,6 +287,8 @@ public class TodoRoutineService {
             .usersEntity(usersEntity)
             .startDt(rq.getStartDt())
             .endDt(rq.getEndDt())
+            .startTargetTm(rq.getStartTargetTm())
+            .endTargetTm(rq.getEndTargetTm())
             .build();
 
         routineEntity = routineRepository.save(routineEntity);
@@ -602,6 +608,22 @@ public class TodoRoutineService {
 
         RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
 
+        // 내용 변경
+        if(rq.getContent() != null) {
+            String content = rq.getContent();
+
+            // 투두 전제 내용 수정
+            List<TodoEntity> todoList = routineEntity.getTodoEntities();
+            for(TodoEntity todo : todoList) {
+                if(todo.getTargetDate().isBefore(LocalDate.now())) {
+                    continue; // 이미 지난 건 스킵
+                } else {
+                    todo.setContent(content);
+                }
+            }
+            todoRepository.saveAll(todoList);
+        }
+
         // Cycle 타입 변경
         if(rq.getCycleType() != null) {
             if(rq.getCycleValue() == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "루틴 타입이 변경되면 루틴 지정일도 같이 와야합니다.");
@@ -697,20 +719,14 @@ public class TodoRoutineService {
 
         GetRoutineDetailRS result = new GetRoutineDetailRS();
         result.setIdx(routineEntity.getIdx());
-        result.setCycleType(routineEntity.getCycleType());
-        result.setCycleValue(result.getCycleValue());
+        result.setContent(routineEntity.getContent());
         result.setRm(result.getRm());
         result.setStartDt(routineEntity.getStartDt());
         result.setEndDt(routineEntity.getEndDt());
-        // Todo: 한 루틴에 속한 투두의 content는 모두 같지 않나? 시작, 끝 시간도 그런 것 같은데...? 차라리 todo 개수를 반환하는 게...
-        result.setTodoList(routineEntity.getTodoEntities().stream().map(todo -> {
-            GetTodoModel model = new GetTodoModel();
-            model.setIdx(todo.getIdx());
-            model.setContent(todo.getContent());
-            model.setTargetDate(todo.getTargetDate());
-            // TODO: totalTime이 필요한가? 실행 전의 투두는 어차피 0인데
-            return model;
-        }).collect(Collectors.toList()));
+        result.setStartTm(routineEntity.getStartTargetTm());
+        result.setEndTm(routineEntity.getEndTargetTm());
+        result.setCycleType(routineEntity.getCycleType());
+        result.setCycleValue(result.getCycleValue());
 
         return result;
     }

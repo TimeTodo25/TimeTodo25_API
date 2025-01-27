@@ -7,6 +7,7 @@ import org.hibernate.annotations.Comment;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Entity
@@ -22,6 +23,10 @@ public class RoutineEntity {
     @Column(name = "IDX")
     @Comment(value = "루틴 IDX")
     private Long idx; // 인덱스
+
+    @Column(name = "CONTENT", nullable = false)
+    @Comment(value = "루틴 내용")
+    private String content; // 내용
 
     @Enumerated(EnumType.STRING)
     @Column(name = "CYCLE_TYPE", nullable = false)
@@ -43,6 +48,14 @@ public class RoutineEntity {
     @Column(name = "END_DT", nullable = false)
     @Comment(value = "루틴 종료일")
     private LocalDate endDt; // 루틴 종료일
+
+    @Column(name = "START_TARGET_TM", nullable = true)
+    @Comment(value = "루틴의 투두 시작시간")
+    private LocalTime startTargetTm; // 루틴의 투두 시작시간
+
+    @Column(name = "END_TARGET_TM", nullable = true)
+    @Comment(value = "루틴의 투두 종료시간")
+    private LocalTime endTargetTm; // 루틴의 투두 종료시간
 
     @Column(name = "CREATE_DT", nullable = false)
     @Comment(value = "생성일시")
