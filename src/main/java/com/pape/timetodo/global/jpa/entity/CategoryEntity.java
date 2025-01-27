@@ -1,5 +1,6 @@
 package com.pape.timetodo.global.jpa.entity;
 
+import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -66,6 +67,7 @@ public class CategoryEntity {
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.status = StatusType.NORMAL.getValue();
     }
 
     @Getter

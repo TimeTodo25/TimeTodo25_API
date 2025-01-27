@@ -9,6 +9,7 @@ public enum StatusType {
 
     NORMAL('Y', "정상"),
     DELETED('D', "삭제"),
+    END('E', "종료"),
     ;
 
     private final Character value;
