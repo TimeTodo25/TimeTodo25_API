@@ -492,14 +492,36 @@ public class TodoRoutineService {
     public UpdateTodoRS updateTodo(UpdateTodoRQ rq) {
 
         TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
+        UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        if(rq.getContent() != null) todoEntity.setContent(rq.getContent());
-        if(rq.getTargetDate() != null) todoEntity.setTargetDate(rq.getTargetDate());
-        if(rq.getStartTargetTm() != null) todoEntity.setStartTargetTm(rq.getStartTargetTm());
-        if(rq.getEndTargetTm() != null) todoEntity.setEndTargetTm(rq.getEndTargetTm());
+        if(rq.getContent() != null) {
+            todoEntity.setContent(rq.getContent());
+            todoEntity.setRoutineEntity(null);
+        }
+        if(rq.getCategoryIdx() != null) {
+            todoEntity.setCategoryEntity(categoryRepository.findByIdxAndUsersEntity(rq.getCategoryIdx(), usersEntity).orElseThrow(
+                    () -> new AppException(ExceptionCode.DATA_NOT_FIND, "카테고리 없음"))
+            );
+            todoEntity.setRoutineEntity(null);
+        }
 
-        // 투두 개별 수정하면 기존 루틴에서 제외됨 // TODO: 카테고리 수정이나, 상태 변경의 경우에는 속한 루틴 값 유지해야 함
-        if(todoEntity.getRoutineEntity() != null) todoEntity.setRoutineEntity(null);
+        boolean isUpdate = false;
+        if(rq.getTargetDate() != null) {
+            todoEntity.setTargetDate(rq.getTargetDate());
+            isUpdate = true;
+        }
+        if(rq.getStartTargetTm() != null) {
+            todoEntity.setStartTargetTm(rq.getStartTargetTm());
+            isUpdate = true;
+        }
+        if(rq.getEndTargetTm() != null) {
+            todoEntity.setEndTargetTm(rq.getEndTargetTm());
+            isUpdate = true;
+        }
+        // 위 셋 중 하나라도 수정되었다면
+        if(todoEntity.getRoutineEntity() != null && isUpdate) {
+            todoEntity.setStatus(StatusType.UPDATED.getValue());
+        }
 
         todoEntity.setUpdateDt(LocalDateTime.now());
         todoRepository.save(todoEntity);
@@ -618,7 +640,9 @@ public class TodoRoutineService {
             List<TodoEntity> todoList = routineEntity.getTodoEntities();
             for(TodoEntity todo : todoList) {
                 if(todo.getTargetDate().isBefore(LocalDate.now())) {
-                    continue; // 이미 지난 건 스킵
+                    continue; // 이미 날짜가 지난 건 스킵
+                } else if(todo.getStatus() == StatusType.UPDATED.getValue()) {
+                    continue; // 이미 개별 수정한 건 스킵
                 } else {
                     todo.setContent(content);
                 }
