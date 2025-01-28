@@ -85,14 +85,18 @@ public class TodoRoutineService {
     /**
      * TODO_ 추가, Routine으로 인해 생성되는 Todo라 로직이 간소해져서 분리함
      * @param rq CreateTodoRQ
+     * @param categoryEntity CategoryEntity
+     * @param usersEntity UsersEntity
+     * @param routineEntity RoutineEntity
      * @return CreateTodoRS
      */
     // @Transactional // TODO: 같은 클래스의 내부 메서드라 트랜잭션이 적용 안된다고 함. 고민 필요.
-    public TodoEntity createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity) {
+    public TodoEntity createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity, RoutineEntity routineEntity) {
 
         TodoEntity.TodoEntityBuilder todoEntityBuilder = TodoEntity.builder()
                 .content(rq.getContent())
                 .categoryEntity(categoryEntity)
+                .routineEntity(routineEntity)
                 .usersEntity(usersEntity)
                 .targetDate(rq.getDate())
                 .status(StatusType.NORMAL.getValue());
@@ -216,14 +220,12 @@ public class TodoRoutineService {
 
         StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
 
-        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
-
+        // 1. 루틴 엔티티 생성 (아직 저장하지 않음)
         RoutineEntity routineEntity = RoutineEntity.builder()
                 .content(rq.getContent())
                 .cycleType(rq.getCycleType())
                 .cycleValue(cycleValue.toString())
                 .rm(rm)
-                .todoEntities(todoEntityList)
                 .usersEntity(usersEntity)
                 .startDt(rq.getStartDt())
                 .endDt(rq.getEndDt())
@@ -231,6 +233,9 @@ public class TodoRoutineService {
                 .endTargetTm(rq.getEndTargetTm())
                 .build();
 
+        // 2. 투두 리스트 생성하면서 루틴 연결 -> 저장
+        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity, routineEntity);
+        routineEntity.setTodoEntities(todoEntityList);
         routineEntity = routineRepository.save(routineEntity);
 
         List<TodoEntity> todoList = routineEntity.getTodoEntities();
@@ -275,21 +280,22 @@ public class TodoRoutineService {
 
         StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
 
-        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
-
+        // 1. 루틴 엔티티 생성 (아직 저장하지 않음)
         RoutineEntity routineEntity = RoutineEntity.builder()
-            .content(rq.getContent())
-            .cycleType(rq.getCycleType())
-            .cycleValue(cycleValue.toString())
-            .rm(rm)
-            .todoEntities(todoEntityList)
-            .usersEntity(usersEntity)
-            .startDt(rq.getStartDt())
-            .endDt(rq.getEndDt())
-            .startTargetTm(rq.getStartTargetTm())
-            .endTargetTm(rq.getEndTargetTm())
-            .build();
+                .content(rq.getContent())
+                .cycleType(rq.getCycleType())
+                .cycleValue(cycleValue.toString())
+                .rm(rm)
+                .usersEntity(usersEntity)
+                .startDt(rq.getStartDt())
+                .endDt(rq.getEndDt())
+                .startTargetTm(rq.getStartTargetTm())
+                .endTargetTm(rq.getEndTargetTm())
+                .build();
 
+        // 2. 투두 리스트 생성하면서 루틴 연결 -> 저장
+        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity, routineEntity);
+        routineEntity.setTodoEntities(todoEntityList);
         routineEntity = routineRepository.save(routineEntity);
 
         List<TodoEntity> todoList = routineEntity.getTodoEntities();
@@ -395,9 +401,10 @@ public class TodoRoutineService {
      * @param rq RegisterRoutineRQ
      * @param usersEntity UsersEntity
      * @param categoryEntity CategoryEntity
+     * @param routineEntity RoutineEntity
      * @return List<TodoEntity>
      */
-    private List<TodoEntity> createTodoList(RegisterRoutineRQ rq, UsersEntity usersEntity, CategoryEntity categoryEntity) {
+    private List<TodoEntity> createTodoList(RegisterRoutineRQ rq, UsersEntity usersEntity, CategoryEntity categoryEntity, RoutineEntity routineEntity) {
         List<TodoEntity> todoEntityList = new ArrayList<>();
 
         // getter 잦은 호출 피하기 위해 각 변수 선언 및 할당
@@ -418,7 +425,7 @@ public class TodoRoutineService {
                 newTodo.setStartTargetTm(startTargetTm);
                 newTodo.setEndTargetTm(endTargetTm);
 
-                TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+                TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
                 todoEntityList.add(todo);
             }
         }
@@ -443,7 +450,7 @@ public class TodoRoutineService {
                     newTodo.setStartTargetTm(startTargetTm);
                     newTodo.setEndTargetTm(endTargetTm);
 
-                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
                     todoEntityList.add(todo);
                 }
             }
@@ -468,7 +475,7 @@ public class TodoRoutineService {
                     newTodo.setStartTargetTm(startTargetTm);
                     newTodo.setEndTargetTm(endTargetTm);
 
-                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
                     todoEntityList.add(todo);
                 }
             }
