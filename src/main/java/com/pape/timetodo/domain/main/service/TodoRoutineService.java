@@ -9,6 +9,7 @@ import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
+import com.pape.timetodo.global.constant.ProgressStatus;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -632,18 +633,6 @@ public class TodoRoutineService {
 
         RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
 
-        // 내용 변경
-        if(rq.getContent() != null) {
-            String content = rq.getContent();
-
-            // 루틴에 속한 투두 전체 내용 수정
-            List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
-            for(TodoEntity todo : todoList) {
-                todo.setContent(content);
-            }
-            todoRepository.saveAll(todoList);
-        }
-
         // Cycle 타입 변경
         if(rq.getCycleType() != null) {
             if(rq.getCycleValue() == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "루틴 타입이 변경되면 루틴 지정일도 같이 와야합니다.");
@@ -688,11 +677,64 @@ public class TodoRoutineService {
             routineEntity.setCycleValue(cycleValue.toString());
         }
 
-        // TODO: 있던 todo 없애야..하는...?
-        if(rq.getStartDt() != null) routineEntity.setStartDt(rq.getStartDt());
-        if(rq.getEndDt() != null) routineEntity.setEndDt(rq.getEndDt());
+        // 시작 / 끝 날짜 변경
+        if(rq.getStartDt() != null) {
+            List<TodoEntity> beforeTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), true);
+            LocalDateTime today = LocalDateTime.now();
 
-        // 속한 Todo_ 데이터도 시간 변경
+            // 1. 논리 삭제 옵션 (그러나 새로운 시작 날짜 이전의 투두지만 완료했다면 루틴과의 연결만 끊음)
+            for(TodoEntity bTodo : beforeTodoList) {
+                if(bTodo.getProgressStatus() == ProgressStatus._100.getValue()) {
+                    bTodo.setUpdateDt(today);
+                    bTodo.setRoutineEntity(null);
+                } else {
+                    bTodo.setDeleteDt(today);
+                    bTodo.setStatus(StatusType.DELETED.getValue());
+                }
+            }
+
+            // 2. 루틴 연결 끊기 옵션
+//            for(TodoEntity bTodo : beforeTodoList) {
+//                bTodo.setUpdateDt(today);
+//                bTodo.setRoutineEntity(null);
+//            }
+
+            todoRepository.saveAll(beforeTodoList);
+            routineEntity.setStartDt(rq.getStartDt());
+        }
+        if(rq.getEndDt() != null) {
+            List<TodoEntity> afterTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), false);
+            LocalDateTime today = LocalDateTime.now();
+
+            // 1. 논리 삭제 옵션
+            for(TodoEntity bTodo : afterTodoList) {
+                bTodo.setDeleteDt(today);
+                bTodo.setStatus(StatusType.DELETED.getValue());
+            }
+
+            // 2. 루틴 연결 끊기 옵션
+//            for(TodoEntity bTodo : afterTodoList) {
+//                bTodo.setUpdateDt(today);
+//                bTodo.setRoutineEntity(null);
+//            }
+
+            todoRepository.saveAll(afterTodoList);
+            routineEntity.setEndDt(rq.getEndDt());
+        }
+
+        // 내용 변경
+        if(rq.getContent() != null) {
+            String content = rq.getContent();
+
+            // 루틴에 속한 투두 전체 내용 수정
+            List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
+            for(TodoEntity todo : todoList) {
+                todo.setContent(content);
+            }
+            todoRepository.saveAll(todoList);
+        }
+
+        // 시간 변경
         LocalDateTime now = LocalDateTime.now();
         if(rq.getStartTm() != null || rq.getEndTm() != null) {
             LocalTime newStartTm = rq.getStartTm();

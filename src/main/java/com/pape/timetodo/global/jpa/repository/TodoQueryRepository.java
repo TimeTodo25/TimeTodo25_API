@@ -99,11 +99,12 @@ public class TodoQueryRepository {
 
 
     /**
-     * 삭제되지 않았고 개별 수정되지 않은 투두 목록 조회
+     * 루틴 내에서 삭제되지 않았고 개별 수정되지 않은 투두 목록 조회
      * @param routineEntity RoutineEntity
      * @return List<TodoEntity>
      */
     public List<TodoEntity> findTodoListByRoutine(RoutineEntity routineEntity) {
+
         QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
 
         LocalDate today = LocalDate.now();
@@ -120,6 +121,35 @@ public class TodoQueryRepository {
                 .fetch();
 
     }
+
+
+    /**
+     * 루틴 내에서 삭제되지 않았고 개별 수정되지 않았으며 기준 날짜 밖의 투두 목록 조회
+     * @param routineEntity RoutineEntity
+     * @param date LocalDate
+     * @param isStart boolean
+     * @return List<TodoEntity>
+     */
+    public List<TodoEntity> findTodoListByRoutineAndDate(RoutineEntity routineEntity, LocalDate date, boolean isStart) {
+
+        QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(qTodoEntity.routineEntity.eq(routineEntity)); // 해당 루틴에 속한 투두
+        builder.and(qTodoEntity.status.notIn(StatusType.DELETED.getValue(), StatusType.UPDATED.getValue())); // 상태가 D나 U가 아닌 것
+        if(isStart)
+            builder.and(qTodoEntity.targetDate.before(date)); // 타겟 날짜가 기준 이전인 것 (기준 미포함)
+        else
+            builder.and(qTodoEntity.targetDate.after(date)); // 타겟 날짜가 기준 이후인 것 (기준 미포함)
+
+        return query
+                .selectFrom(qTodoEntity)
+                .where(builder)
+                .orderBy(qTodoEntity.targetDate.asc()) // 타겟 날짜 기준으로 오름차순 정렬
+                .fetch();
+
+    }
+
 
     /**
      * 카테고리별 투두 모두 조회하여 논리 삭제
