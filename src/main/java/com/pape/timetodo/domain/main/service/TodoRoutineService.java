@@ -430,7 +430,7 @@ public class TodoRoutineService {
             (oldTodo.get().getTargetDate().isEqual(rq.getEndDt()) || oldTodo.get().getTargetDate().isBefore(rq.getEndDt()))) {
                 todoRepository.delete(oldTodo.get());
             }
-            oldTodo.ifPresent(todoRepository::delete); // 기존 투두는 날짜 겹치든 말든 삭제가 디폴트
+            oldTodo.ifPresent(todoRepository::delete); // 기존 투두는 날짜 겹치든 말든 삭제가 디폴트 TODO: 삭제 안함 옵션이 생길 예정...
         }
 
         return todoEntityList;
