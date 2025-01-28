@@ -428,7 +428,7 @@ public class TodoRoutineService {
             Optional<TodoEntity> oldTodo = todoRepository.findById(rq.getTodoIdx());
             if(oldTodo.isPresent() && (oldTodo.get().getTargetDate().isEqual(rq.getStartDt()) || oldTodo.get().getTargetDate().isAfter(rq.getStartDt())) &&
             (oldTodo.get().getTargetDate().isEqual(rq.getEndDt()) || oldTodo.get().getTargetDate().isBefore(rq.getEndDt()))) {
-                todoRepository.delete(oldTodo.get());
+                todoRepository.delete(oldTodo.get()); // TODO: 이거 물리 삭젠데 ㄱㅊ?
             }
             oldTodo.ifPresent(todoRepository::delete); // 기존 투두는 날짜 겹치든 말든 삭제가 디폴트 TODO: 삭제 안함 옵션이 생길 예정...
         }
