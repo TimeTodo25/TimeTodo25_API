@@ -9,12 +9,16 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.TimeTemplate;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -23,6 +27,9 @@ import java.util.List;
 public class TodoQueryRepository {
 
     private final JPAQueryFactory query;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * 카테고리별로 회차하며 해당 날짜의 투두 모두 조회
@@ -103,7 +110,7 @@ public class TodoQueryRepository {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(qTodoEntity.routineEntity.eq(routineEntity)); // 해당 루틴에 속한 투두
-        builder.and(qTodoEntity.status.notIn(StatusType.DELETED.getValue(), StatusType.UPDATED.getValue())); // 상태가 D나 Y가 아닌 것
+        builder.and(qTodoEntity.status.notIn(StatusType.DELETED.getValue(), StatusType.UPDATED.getValue())); // 상태가 D나 U가 아닌 것
         builder.and(qTodoEntity.targetDate.goe(today)); // 타겟 날짜가 오늘 이후인 것 (오늘 포함)
 
         return query
@@ -114,4 +121,39 @@ public class TodoQueryRepository {
 
     }
 
+    /**
+     * 카테고리별 투두 모두 조회하여 논리 삭제
+     * @param categoryEntity CategoryEntity
+     */
+    @Transactional
+    public void deleteTodoListByCategory(CategoryEntity categoryEntity, LocalDateTime today){
+        QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
+
+        query.update(qTodoEntity)
+                .set(qTodoEntity.deleteDt, today)
+                .set(qTodoEntity.status, StatusType.DELETED.getValue())
+                .where(qTodoEntity.categoryEntity.eq(categoryEntity)
+                        .and(qTodoEntity.status.notIn(StatusType.DELETED.getValue())))
+                .execute();
+    }
+
+
+    /**
+     * 카테고리별 오늘 이후 해당하는 투두 모두 조회하여 카테고리 연결 끊기
+     * @param categoryEntity CategoryEntity
+     */
+    @Transactional
+    public void endWithCategoryTodoListByCategory(CategoryEntity categoryEntity, LocalDateTime today){
+        QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
+
+        query.update(qTodoEntity)
+                .set(qTodoEntity.categoryEntity, (CategoryEntity) null)
+                .where(qTodoEntity.categoryEntity.eq(categoryEntity)
+                        .and(qTodoEntity.status.notIn(StatusType.DELETED.getValue()))
+                        .and(qTodoEntity.targetDate.after(LocalDate.from(today))))
+                .execute();
+
+        entityManager.flush(); // 변경 사항을 DB에 반영
+        entityManager.clear(); // 1차 캐시 초기화
+    }
 }

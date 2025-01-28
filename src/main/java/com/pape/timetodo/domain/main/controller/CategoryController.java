@@ -94,4 +94,21 @@ public class CategoryController {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 카테고리 종료
+     * @param idx Long
+     */
+    @DeleteMapping("/{idx}/delete")
+    @Operation(summary = "카테고리 종료", description = "카테고리를 종료합니다.")
+    public ResponseEntity<Void> endCategory(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "종료할 카테고리 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        if(idx == null){
+            throw new AppException(ExceptionCode.NON_VALID_PARAMETER);
+        }
+
+        categoryService.endCategory(idx);
+
+        return ResponseEntity.ok().build();
+    }
 }

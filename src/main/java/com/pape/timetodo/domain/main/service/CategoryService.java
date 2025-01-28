@@ -8,8 +8,7 @@ import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.CategoryEntity;
 import com.pape.timetodo.global.jpa.entity.TodoEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
-import com.pape.timetodo.global.jpa.repository.CategoryQueryRepository;
-import com.pape.timetodo.global.jpa.repository.CategoryRepository;
+import com.pape.timetodo.global.jpa.repository.*;
 import com.pape.timetodo.global.util.UserUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +29,10 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
 
     private final CategoryQueryRepository categoryQueryRepository;
+
+    private final TodoQueryRepository todoQueryRepository;
+
+    private final RoutineQueryRepository routineQueryRepository;
 
     private final UserUtil userUtil;
     
@@ -150,6 +153,11 @@ public class CategoryService {
         if(categoryEntityWrapper.isPresent()){
 
             CategoryEntity categoryEntity = categoryEntityWrapper.get();
+
+            LocalDateTime today = LocalDateTime.now();
+            routineQueryRepository.deleteRoutineListByCategory(categoryEntity, today);
+            todoQueryRepository.deleteTodoListByCategory(categoryEntity, today);
+
             categoryEntity.setDeleteDt(LocalDateTime.now());
             categoryEntity.setStatus(StatusType.DELETED.getValue());
 
@@ -157,4 +165,28 @@ public class CategoryService {
         }
     }
 
+    /**
+     * 카테고리 종료
+     * @param idx Long
+     */
+    @Transactional
+    public void endCategory(Long idx) {
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        Optional<CategoryEntity> categoryEntityWrapper = categoryRepository.findByIdxAndUsersEntity(idx, usersEntity);
+
+        if(categoryEntityWrapper.isPresent()){
+
+            CategoryEntity categoryEntity = categoryEntityWrapper.get();
+
+            LocalDateTime today = LocalDateTime.now();
+            routineQueryRepository.endWithCategoryRoutineListByCategory(categoryEntity, today);
+            todoQueryRepository.endWithCategoryTodoListByCategory(categoryEntity, today);
+
+            categoryEntity.setUpdateDt(LocalDateTime.now());
+            categoryEntity.setStatus(StatusType.END.getValue());
+
+            categoryRepository.save(categoryEntity);
+        }
+    }
 }
