@@ -73,7 +73,7 @@ public class RoutineEntity {
     @Comment(value = "상태")
     private Character status; // 상태 - 삭제여부 등
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "routineEntity")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "routineEntity", cascade = CascadeType.ALL)
     private List<TodoEntity> todoEntities;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -26,10 +26,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,14 +85,18 @@ public class TodoRoutineService {
     /**
      * TODO_ 추가, Routine으로 인해 생성되는 Todo라 로직이 간소해져서 분리함
      * @param rq CreateTodoRQ
+     * @param categoryEntity CategoryEntity
+     * @param usersEntity UsersEntity
+     * @param routineEntity RoutineEntity
      * @return CreateTodoRS
      */
     // @Transactional // TODO: 같은 클래스의 내부 메서드라 트랜잭션이 적용 안된다고 함. 고민 필요.
-    public TodoEntity createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity) {
+    public TodoEntity createTodoByRoutine(@Valid CreateTodoRQ rq, CategoryEntity categoryEntity, UsersEntity usersEntity, RoutineEntity routineEntity) {
 
         TodoEntity.TodoEntityBuilder todoEntityBuilder = TodoEntity.builder()
                 .content(rq.getContent())
                 .categoryEntity(categoryEntity)
+                .routineEntity(routineEntity)
                 .usersEntity(usersEntity)
                 .targetDate(rq.getDate())
                 .status(StatusType.NORMAL.getValue());
@@ -215,18 +216,16 @@ public class TodoRoutineService {
         CategoryEntity categoryEntity = categoryRepository.findByIdxAndUsersEntity(rq.getCategoryIdx(), usersEntity)
                 .orElseThrow(() -> new AppException(ExceptionCode.NON_VALID_PARAMETER, "잘못된 카테고리 IDX"));
 
-        String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue()); // TODO: 이게 왜 필요하지..?
+        String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue());
 
         StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
 
-        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
-
+        // 1. 루틴 엔티티 생성 (아직 저장하지 않음)
         RoutineEntity routineEntity = RoutineEntity.builder()
                 .content(rq.getContent())
                 .cycleType(rq.getCycleType())
                 .cycleValue(cycleValue.toString())
                 .rm(rm)
-                .todoEntities(todoEntityList)
                 .usersEntity(usersEntity)
                 .startDt(rq.getStartDt())
                 .endDt(rq.getEndDt())
@@ -234,6 +233,9 @@ public class TodoRoutineService {
                 .endTargetTm(rq.getEndTargetTm())
                 .build();
 
+        // 2. 투두 리스트 생성하면서 루틴 연결 -> 저장
+        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity, routineEntity);
+        routineEntity.setTodoEntities(todoEntityList);
         routineEntity = routineRepository.save(routineEntity);
 
         List<TodoEntity> todoList = routineEntity.getTodoEntities();
@@ -278,21 +280,22 @@ public class TodoRoutineService {
 
         StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
 
-        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity);
-
+        // 1. 루틴 엔티티 생성 (아직 저장하지 않음)
         RoutineEntity routineEntity = RoutineEntity.builder()
-            .content(rq.getContent())
-            .cycleType(rq.getCycleType())
-            .cycleValue(cycleValue.toString())
-            .rm(rm)
-            .todoEntities(todoEntityList)
-            .usersEntity(usersEntity)
-            .startDt(rq.getStartDt())
-            .endDt(rq.getEndDt())
-            .startTargetTm(rq.getStartTargetTm())
-            .endTargetTm(rq.getEndTargetTm())
-            .build();
+                .content(rq.getContent())
+                .cycleType(rq.getCycleType())
+                .cycleValue(cycleValue.toString())
+                .rm(rm)
+                .usersEntity(usersEntity)
+                .startDt(rq.getStartDt())
+                .endDt(rq.getEndDt())
+                .startTargetTm(rq.getStartTargetTm())
+                .endTargetTm(rq.getEndTargetTm())
+                .build();
 
+        // 2. 투두 리스트 생성하면서 루틴 연결 -> 저장
+        List<TodoEntity> todoEntityList = createTodoList(rq, usersEntity, categoryEntity, routineEntity);
+        routineEntity.setTodoEntities(todoEntityList);
         routineEntity = routineRepository.save(routineEntity);
 
         List<TodoEntity> todoList = routineEntity.getTodoEntities();
@@ -398,9 +401,10 @@ public class TodoRoutineService {
      * @param rq RegisterRoutineRQ
      * @param usersEntity UsersEntity
      * @param categoryEntity CategoryEntity
+     * @param routineEntity RoutineEntity
      * @return List<TodoEntity>
      */
-    private List<TodoEntity> createTodoList(RegisterRoutineRQ rq, UsersEntity usersEntity, CategoryEntity categoryEntity) {
+    private List<TodoEntity> createTodoList(RegisterRoutineRQ rq, UsersEntity usersEntity, CategoryEntity categoryEntity, RoutineEntity routineEntity) {
         List<TodoEntity> todoEntityList = new ArrayList<>();
 
         // getter 잦은 호출 피하기 위해 각 변수 선언 및 할당
@@ -409,18 +413,72 @@ public class TodoRoutineService {
         LocalTime startTargetTm = rq.getStartTargetTm();
         LocalTime endTargetTm = rq.getEndTargetTm();
 
-        // 날짜 마다 Todo_ 데이터 추가
-        for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+        // 매일
+        if(rq.getCycleType().equals(CycleType.EVERY_DAY)) {
+            // 날짜 마다 Todo_ 데이터 추가
+            for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
 
-            CreateTodoRQ newTodo = new CreateTodoRQ();
-            newTodo.setContent(content);
-            newTodo.setCategoryIdx(categoryIdx);
-            newTodo.setDate(date);
-            newTodo.setStartTargetTm(startTargetTm);
-            newTodo.setEndTargetTm(endTargetTm);
+                CreateTodoRQ newTodo = new CreateTodoRQ();
+                newTodo.setContent(content);
+                newTodo.setCategoryIdx(categoryIdx);
+                newTodo.setDate(date);
+                newTodo.setStartTargetTm(startTargetTm);
+                newTodo.setEndTargetTm(endTargetTm);
 
-            TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
-            todoEntityList.add(todo);
+                TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
+                todoEntityList.add(todo);
+            }
+        }
+        // 매주
+        else if(rq.getCycleType().equals(CycleType.EVERY_WEEK)) {
+            List<Byte> cycleValues = rq.getCycleValue();
+            List<DayWeekType> selectedDays = cycleValues.stream()
+                    .map(value -> DayWeekType.fromValue(value.intValue()))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+                // 현재 날짜의 요일을 DayWeekType으로 변환
+                DayWeekType currentDayType = DayWeekType.fromValue(date.getDayOfWeek().getValue());
+
+                // 선택된 요일인 경우에만 Todo_ 생성
+                if(selectedDays.contains(currentDayType)) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
+                    todoEntityList.add(todo);
+                }
+            }
+        }
+        // 매달
+        else if(rq.getCycleType().equals(CycleType.EVERY_MONTH)) {
+            List<Byte> cycleValues = rq.getCycleValue();
+            List<Integer> selectedDates = cycleValues.stream()
+                    .map(value -> (int) value)
+                    .toList();
+
+            for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+                // 현재 날짜의 일자를 가져옴 (1-31)
+                int dayOfMonth = date.getDayOfMonth();
+
+                // 선택된 날짜인 경우에만 Todo_ 생성
+                if(selectedDates.contains(dayOfMonth)) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
+                    todoEntityList.add(todo);
+                }
+            }
         }
 
         // 날짜 겹치는 기존의 TodoEntity 삭제
@@ -428,9 +486,9 @@ public class TodoRoutineService {
             Optional<TodoEntity> oldTodo = todoRepository.findById(rq.getTodoIdx());
             if(oldTodo.isPresent() && (oldTodo.get().getTargetDate().isEqual(rq.getStartDt()) || oldTodo.get().getTargetDate().isAfter(rq.getStartDt())) &&
             (oldTodo.get().getTargetDate().isEqual(rq.getEndDt()) || oldTodo.get().getTargetDate().isBefore(rq.getEndDt()))) {
-                todoRepository.delete(oldTodo.get());
+                todoRepository.delete(oldTodo.get()); // TODO: 이거 물리 삭젠데 ㄱㅊ?
             }
-            // _todo.ifPresent(todoRepository::delete); // TODO: 그냥 기존 투두는 날짜 겹치든 말든 없애는 게 낫지 않나 논의 필요
+            oldTodo.ifPresent(todoRepository::delete); // 기존 투두는 날짜 겹치든 말든 삭제가 디폴트 TODO: 삭제 안함 옵션이 생길 예정...
         }
 
         return todoEntityList;
@@ -632,18 +690,6 @@ public class TodoRoutineService {
 
         RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
 
-        // 내용 변경
-        if(rq.getContent() != null) {
-            String content = rq.getContent();
-
-            // 루틴에 속한 투두 전체 내용 수정
-            List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
-            for(TodoEntity todo : todoList) {
-                todo.setContent(content);
-            }
-            todoRepository.saveAll(todoList);
-        }
-
         // Cycle 타입 변경
         if(rq.getCycleType() != null) {
             if(rq.getCycleValue() == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "루틴 타입이 변경되면 루틴 지정일도 같이 와야합니다.");
@@ -688,11 +734,64 @@ public class TodoRoutineService {
             routineEntity.setCycleValue(cycleValue.toString());
         }
 
-        // TODO: 있던 todo 없애야..하는...?
-        if(rq.getStartDt() != null) routineEntity.setStartDt(rq.getStartDt());
-        if(rq.getEndDt() != null) routineEntity.setEndDt(rq.getEndDt());
+        // 시작 / 끝 날짜 변경
+        if(rq.getStartDt() != null) {
+            List<TodoEntity> beforeTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), true);
+            LocalDateTime today = LocalDateTime.now();
 
-        // 속한 Todo_ 데이터도 시간 변경
+            // 1. 논리 삭제 옵션 (그러나 새로운 시작 날짜 이전의 투두지만 완료했다면 루틴과의 연결만 끊음)
+            for(TodoEntity bTodo : beforeTodoList) {
+                if(Objects.equals(bTodo.getProgressStatus(), TodoEntity.ProgressStatus._100.getValue())) {
+                    bTodo.setUpdateDt(today);
+                    bTodo.setRoutineEntity(null);
+                } else {
+                    bTodo.setDeleteDt(today);
+                    bTodo.setStatus(StatusType.DELETED.getValue());
+                }
+            }
+
+            // 2. 루틴 연결 끊기 옵션
+//            for(TodoEntity bTodo : beforeTodoList) {
+//                bTodo.setUpdateDt(today);
+//                bTodo.setRoutineEntity(null);
+//            }
+
+            todoRepository.saveAll(beforeTodoList);
+            routineEntity.setStartDt(rq.getStartDt());
+        }
+        if(rq.getEndDt() != null) {
+            List<TodoEntity> afterTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), false);
+            LocalDateTime today = LocalDateTime.now();
+
+            // 1. 논리 삭제 옵션
+            for(TodoEntity bTodo : afterTodoList) {
+                bTodo.setDeleteDt(today);
+                bTodo.setStatus(StatusType.DELETED.getValue());
+            }
+
+            // 2. 루틴 연결 끊기 옵션
+//            for(TodoEntity bTodo : afterTodoList) {
+//                bTodo.setUpdateDt(today);
+//                bTodo.setRoutineEntity(null);
+//            }
+
+            todoRepository.saveAll(afterTodoList);
+            routineEntity.setEndDt(rq.getEndDt());
+        }
+
+        // 내용 변경
+        if(rq.getContent() != null) {
+            String content = rq.getContent();
+
+            // 루틴에 속한 투두 전체 내용 수정
+            List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
+            for(TodoEntity todo : todoList) {
+                todo.setContent(content);
+            }
+            todoRepository.saveAll(todoList);
+        }
+
+        // 시간 변경
         LocalDateTime now = LocalDateTime.now();
         if(rq.getStartTm() != null || rq.getEndTm() != null) {
             LocalTime newStartTm = rq.getStartTm();
