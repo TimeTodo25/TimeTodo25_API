@@ -212,7 +212,7 @@ public class TodoRoutineService {
         CategoryEntity categoryEntity = categoryRepository.findByIdxAndUsersEntity(rq.getCategoryIdx(), usersEntity)
                 .orElseThrow(() -> new AppException(ExceptionCode.NON_VALID_PARAMETER, "잘못된 카테고리 IDX"));
 
-        String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue()); // TODO: 이게 왜 필요하지..?
+        String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue());
 
         StringBuilder cycleValue = getCycleValueAsStr(rq.getCycleType(), rq.getCycleValue());
 
@@ -406,18 +406,72 @@ public class TodoRoutineService {
         LocalTime startTargetTm = rq.getStartTargetTm();
         LocalTime endTargetTm = rq.getEndTargetTm();
 
-        // 날짜 마다 Todo_ 데이터 추가
-        for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+        // 매일
+        if(rq.getCycleType().equals(CycleType.EVERY_DAY)) {
+            // 날짜 마다 Todo_ 데이터 추가
+            for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
 
-            CreateTodoRQ newTodo = new CreateTodoRQ();
-            newTodo.setContent(content);
-            newTodo.setCategoryIdx(categoryIdx);
-            newTodo.setDate(date);
-            newTodo.setStartTargetTm(startTargetTm);
-            newTodo.setEndTargetTm(endTargetTm);
+                CreateTodoRQ newTodo = new CreateTodoRQ();
+                newTodo.setContent(content);
+                newTodo.setCategoryIdx(categoryIdx);
+                newTodo.setDate(date);
+                newTodo.setStartTargetTm(startTargetTm);
+                newTodo.setEndTargetTm(endTargetTm);
 
-            TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
-            todoEntityList.add(todo);
+                TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+                todoEntityList.add(todo);
+            }
+        }
+        // 매주
+        else if(rq.getCycleType().equals(CycleType.EVERY_WEEK)) {
+            List<Byte> cycleValues = rq.getCycleValue();
+            List<DayWeekType> selectedDays = cycleValues.stream()
+                    .map(value -> DayWeekType.fromValue(value.intValue()))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+                // 현재 날짜의 요일을 DayWeekType으로 변환
+                DayWeekType currentDayType = DayWeekType.fromValue(date.getDayOfWeek().getValue());
+
+                // 선택된 요일인 경우에만 Todo_ 생성
+                if(selectedDays.contains(currentDayType)) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+                    todoEntityList.add(todo);
+                }
+            }
+        }
+        // 매달
+        else if(rq.getCycleType().equals(CycleType.EVERY_MONTH)) {
+            List<Byte> cycleValues = rq.getCycleValue();
+            List<Integer> selectedDates = cycleValues.stream()
+                    .map(value -> (int) value)
+                    .toList();
+
+            for(LocalDate date = rq.getStartDt(); !date.isAfter(rq.getEndDt()); date = date.plusDays(1)) {
+                // 현재 날짜의 일자를 가져옴 (1-31)
+                int dayOfMonth = date.getDayOfMonth();
+
+                // 선택된 날짜인 경우에만 Todo_ 생성
+                if(selectedDates.contains(dayOfMonth)) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity);
+                    todoEntityList.add(todo);
+                }
+            }
         }
 
         // 날짜 겹치는 기존의 TodoEntity 삭제
