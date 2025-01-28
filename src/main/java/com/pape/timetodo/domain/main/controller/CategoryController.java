@@ -99,7 +99,7 @@ public class CategoryController {
      * 카테고리 종료
      * @param idx Long
      */
-    @DeleteMapping("/{idx}/delete")
+    @PatchMapping("/{idx}/end")
     @Operation(summary = "카테고리 종료", description = "카테고리를 종료합니다.")
     public ResponseEntity<Void> endCategory(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "종료할 카테고리 IDX", in = ParameterIn.PATH, example = "1") Long idx){
 
