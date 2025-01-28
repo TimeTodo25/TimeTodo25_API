@@ -1,12 +1,8 @@
 package com.pape.timetodo.global.jpa.entity;
 
-import com.pape.timetodo.global.constant.ProgressStatus;
 import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Comment;
 
 import java.time.LocalDate;
@@ -90,5 +86,16 @@ public class TodoEntity {
         this.updateDt = LocalDateTime.now();
         this.status = StatusType.NORMAL.getValue();
         this.progressStatus = ProgressStatus._0.getValue();
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public enum ProgressStatus {
+        _100(100),
+        _50(50),
+        _0(0),
+        ;
+
+        private final Integer value;
     }
 }

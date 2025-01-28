@@ -9,7 +9,6 @@ import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
-import com.pape.timetodo.global.constant.ProgressStatus;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -27,10 +26,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -684,7 +680,7 @@ public class TodoRoutineService {
 
             // 1. 논리 삭제 옵션 (그러나 새로운 시작 날짜 이전의 투두지만 완료했다면 루틴과의 연결만 끊음)
             for(TodoEntity bTodo : beforeTodoList) {
-                if(bTodo.getProgressStatus() == ProgressStatus._100.getValue()) {
+                if(Objects.equals(bTodo.getProgressStatus(), TodoEntity.ProgressStatus._100.getValue())) {
                     bTodo.setUpdateDt(today);
                     bTodo.setRoutineEntity(null);
                 } else {
