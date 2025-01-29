@@ -101,4 +101,15 @@ public class RoutineEntity {
         EVERY_MONTH
     }
 
+    // 여러 개의 Todo를 한번에 추가하는 메소드
+    public void addTodos(List<TodoEntity> todoList) {
+        todoList.forEach(this::addTodo);
+    }
+
+    // 단일 Todo_ 추가 메소드
+    public void addTodo(TodoEntity todo) {
+        todoEntities.add(todo);
+        todo.setRoutineEntity(this);
+    }
+
 }

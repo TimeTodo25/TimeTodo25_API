@@ -20,6 +20,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Slf4j
@@ -181,5 +182,19 @@ public class TodoQueryRepository {
 
         entityManager.flush(); // 변경 사항을 DB에 반영
         entityManager.clear(); // 1차 캐시 초기화
+    }
+
+    @Transactional
+    public Optional<TodoEntity> existTodoByRoutineAndDate(LocalDate targetDt, RoutineEntity routineEntity) {
+        QTodoEntity qTodoEntity = QTodoEntity.todoEntity;
+
+        return Optional.ofNullable(query
+                .selectFrom(qTodoEntity)
+                .where(
+                        qTodoEntity.targetDate.eq(targetDt)
+                                .and(qTodoEntity.routineEntity.eq(routineEntity))
+                                .and(qTodoEntity.status.notIn(StatusType.DELETED.getValue()))
+                )
+                .fetchOne());
     }
 }
