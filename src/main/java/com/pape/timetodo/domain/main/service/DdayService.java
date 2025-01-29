@@ -11,9 +11,11 @@ import com.pape.timetodo.global.jpa.repository.DdayRepository;
 import com.pape.timetodo.global.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -141,5 +143,23 @@ public class DdayService {
         result.setTargetDelYn(dday.getTargetDelYn());
 
         return result;
+    }
+
+    /**
+     * 디데이 자동 삭제
+     * 매일 자정 직후 실행
+     */
+    @Scheduled(cron = "3 0 0 * * *") // 매일 자정 3초
+    @Transactional
+    public void autoCloseDday() {
+        List<DdayEntity> ddayList = ddayQueryRepository.findAllToClose(LocalDate.now().minusDays(1)); // 기준 날짜: 어제
+
+        LocalDateTime now = LocalDateTime.now();
+        Character deleted = StatusType.DELETED.getValue();
+        for(DdayEntity dday : ddayList) {
+            dday.setDeleteDt(now);
+            dday.setStatus(deleted);
+        }
+        ddayRepository.saveAll(ddayList);
     }
 }
