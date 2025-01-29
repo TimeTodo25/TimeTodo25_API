@@ -78,11 +78,7 @@ public class TodoQueryRepository {
 
         BooleanBuilder builder = new BooleanBuilder();
         builder.and(qDdayEntity.usersEntity.eq(usersEntity));
-        builder.and(
-                qDdayEntity.targetDelYn.isFalse() // ddayDelYn이 false인 경우 = 해당 날짜 도래해도 삭제하지 않음 옵션의 디데이만 포함
-                        .or(qDdayEntity.targetDt.goe(date)) // 또는 targetDt(디데이 날짜)가 date(기준 날짜)보다 미래이거나 같은 경우 포함
-        );
-        // TODO: 차후 status 적용해서 그냥 삭제되지 않은 Dday 모두 가져가도록 할 예정 (자동 삭제 적용 이후)
+        builder.and(qDdayEntity.status.notIn(StatusType.DELETED.getValue()));
 
         return query
                 .select(Projections.bean(
