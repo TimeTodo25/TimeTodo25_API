@@ -691,12 +691,12 @@ public class TodoRoutineService {
     public UpdateRoutineRS updateRoutine(UpdateRoutineRQ rq) {
 
         RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
+        LocalDateTime today = LocalDateTime.now();
 
         // 시작/끝 날짜 변경 (1) - 새로운 기간에서 벗어나는 경우 삭제 작업
         // 시작 날짜가 기존 날짜 이후로 바뀌었을 경우
         if(rq.getStartDt() != null && rq.getStartDt().isAfter(routineEntity.getStartDt())) {
             List<TodoEntity> beforeTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), true);
-            LocalDateTime today = LocalDateTime.now();
 
             // 1. 논리 삭제 옵션 (그러나 새로운 시작 날짜 이전의 투두지만 완료했다면 루틴과의 연결만 끊음)
             for(TodoEntity bTodo : beforeTodoList) {
@@ -721,7 +721,6 @@ public class TodoRoutineService {
         // 끝 날짜가 기존 날짜 이전으로 바뀌었을 경우
         if(rq.getEndDt() != null && rq.getEndDt().isBefore(routineEntity.getEndDt())) {
             List<TodoEntity> afterTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), false);
-            LocalDateTime today = LocalDateTime.now();
 
             // 1. 논리 삭제 옵션
             for(TodoEntity bTodo : afterTodoList) {
@@ -791,25 +790,27 @@ public class TodoRoutineService {
             List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
             for(TodoEntity todo : todoList) {
                 todo.setContent(content);
+                todo.setUpdateDt(today);
             }
             todoRepository.saveAll(todoList);
+
+            routineEntity.setContent(content);
         }
 
         // 시간 변경
-        LocalDateTime now = LocalDateTime.now();
         if(rq.getStartTm() != null || rq.getEndTm() != null) {
             LocalTime newStartTm = rq.getStartTm();
             LocalTime newEndTm = rq.getEndTm();
             for(TodoEntity todoEntity : routineEntity.getTodoEntities()) {
                 todoEntity.setStartTargetTm(newStartTm);
                 todoEntity.setEndTargetTm(newEndTm);
-                todoEntity.setUpdateDt(now);
+                todoEntity.setUpdateDt(today);
                 todoRepository.save(todoEntity);
             }
         }
 
         UpdateRoutineRS result = new UpdateRoutineRS();
-        result.setUpdateDt(now);
+        result.setUpdateDt(today);
         return result;
     }
 
