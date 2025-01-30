@@ -1,10 +1,10 @@
 package com.pape.timetodo.domain.main.model.routine;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.google.firebase.database.annotations.NotNull;
 import com.pape.timetodo.global.jpa.entity.RoutineEntity.CycleType;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.time.LocalDate;
