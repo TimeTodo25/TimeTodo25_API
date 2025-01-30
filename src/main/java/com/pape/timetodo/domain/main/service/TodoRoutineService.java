@@ -227,6 +227,7 @@ public class TodoRoutineService {
                 .cycleValue(cycleValue.toString())
                 .rm(rm)
                 .usersEntity(usersEntity)
+                .categoryEntity(categoryEntity)
                 .startDt(rq.getStartDt())
                 .endDt(rq.getEndDt())
                 .startTargetTm(rq.getStartTargetTm())
@@ -287,6 +288,7 @@ public class TodoRoutineService {
                 .cycleValue(cycleValue.toString())
                 .rm(rm)
                 .usersEntity(usersEntity)
+                .categoryEntity(categoryEntity)
                 .startDt(rq.getStartDt())
                 .endDt(rq.getEndDt())
                 .startTargetTm(rq.getStartTargetTm())
@@ -689,55 +691,12 @@ public class TodoRoutineService {
     public UpdateRoutineRS updateRoutine(UpdateRoutineRQ rq) {
 
         RoutineEntity routineEntity = this.getMyRoutineData(rq.getRoutineIdx());
+        LocalDateTime today = LocalDateTime.now();
 
-        // Cycle 타입 변경
-        if(rq.getCycleType() != null) {
-            if(rq.getCycleValue() == null) throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "루틴 타입이 변경되면 루틴 지정일도 같이 와야합니다.");
-
-            routineEntity.setCycleType(rq.getCycleType());
-        }
-
-        // Cycle 데이터 변경
-        if(rq.getCycleValue() != null){
-
-            String rm = this.validationRoutineCycleType(routineEntity.getCycleType(), rq.getCycleValue());
-
-            StringBuilder cycleValue = new StringBuilder();
-    
-            // 루틴 사이클 지정일이 있을 시
-            if(rq.getCycleValue() != null){
-                rq.getCycleValue().forEach(value -> {
-                    
-                    switch (rq.getCycleType()) {
-                        case EVERY_DAY:
-                            break;
-                        case EVERY_MONTH:
-                            if(!(value >= 1 && 31 >= value)) {
-                                throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "일 지정은 1~31까지 숫자를 넣어야 합니다.");
-                            } 
-    
-                            break;
-                        case EVERY_WEEK:
-                            DayWeekType dayWeek = DayWeekType.fromValue(value.intValue());
-                            if(dayWeek == null){
-                                throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "요일은 1~7까지 숫자를 넣어야 합니다.");
-                            }
-                            break;
-                    }    
-                    cycleValue.append(value);
-                    cycleValue.append(",");
-                });
-                cycleValue.deleteCharAt(cycleValue.length() - 1);
-            }
-
-            routineEntity.setRm(rm);
-            routineEntity.setCycleValue(cycleValue.toString());
-        }
-
-        // 시작 / 끝 날짜 변경
-        if(rq.getStartDt() != null) {
+        // 시작/끝 날짜 변경 (1) - 새로운 기간에서 벗어나는 경우 삭제 작업
+        // 시작 날짜가 기존 날짜 이후로 바뀌었을 경우
+        if(rq.getStartDt() != null && rq.getStartDt().isAfter(routineEntity.getStartDt())) {
             List<TodoEntity> beforeTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), true);
-            LocalDateTime today = LocalDateTime.now();
 
             // 1. 논리 삭제 옵션 (그러나 새로운 시작 날짜 이전의 투두지만 완료했다면 루틴과의 연결만 끊음)
             for(TodoEntity bTodo : beforeTodoList) {
@@ -759,9 +718,9 @@ public class TodoRoutineService {
             todoRepository.saveAll(beforeTodoList);
             routineEntity.setStartDt(rq.getStartDt());
         }
-        if(rq.getEndDt() != null) {
+        // 끝 날짜가 기존 날짜 이전으로 바뀌었을 경우
+        if(rq.getEndDt() != null && rq.getEndDt().isBefore(routineEntity.getEndDt())) {
             List<TodoEntity> afterTodoList = todoQueryRepository.findTodoListByRoutineAndDate(routineEntity, rq.getStartDt(), false);
-            LocalDateTime today = LocalDateTime.now();
 
             // 1. 논리 삭제 옵션
             for(TodoEntity bTodo : afterTodoList) {
@@ -779,6 +738,50 @@ public class TodoRoutineService {
             routineEntity.setEndDt(rq.getEndDt());
         }
 
+        // Cycle 변경 + 시작/끝 날짜 변경 (2) - 새로운 투두 추가작업
+        if(rq.getCycleType() != null) {
+
+            LocalDate startDt = rq.getStartDt() != null ? rq.getStartDt() : routineEntity.getStartDt();
+            LocalDate endDt = rq.getEndDt() != null ? rq.getEndDt() : routineEntity.getEndDt();
+
+            // Cycle Type 관련
+            if(!rq.getCycleType().equals(CycleType.EVERY_DAY) && rq.getCycleValue() == null)
+                throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "루틴 타입이 매일이 아니므로 루틴 지정일도 같이 와야합니다.");
+            // 루틴에 속한 각 Todo도 수정
+            updateRoutineCycle(rq.getCycleType(), rq.getCycleValue(), routineEntity, startDt, endDt);
+            routineEntity.setCycleType(rq.getCycleType());
+
+            // Cycle Value 관련 (+ RM)
+            String rm = validationRoutineCycleType(rq.getCycleType(), rq.getCycleValue());
+            StringBuilder cycleValue = new StringBuilder();
+            // 루틴 사이클 지정일이 있을 시 value 유효성 검사
+            if(rq.getCycleValue() != null){
+                rq.getCycleValue().forEach(value -> {
+                    switch (rq.getCycleType()) {
+                        case EVERY_DAY:
+                            break;
+                        case EVERY_MONTH:
+                            if(!(value >= 1 && 31 >= value)) {
+                                throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "일 지정은 1~31까지 숫자를 넣어야 합니다.");
+                            }
+                            break;
+                        case EVERY_WEEK:
+                            DayWeekType dayWeek = DayWeekType.fromValue(value.intValue());
+                            if(dayWeek == null){
+                                throw new AppException(ExceptionCode.NON_VALID_PARAMETER, "요일은 1~7까지 숫자를 넣어야 합니다.");
+                            }
+                            break;
+                    }    
+                    cycleValue.append(value);
+                    cycleValue.append(",");
+                });
+                cycleValue.deleteCharAt(cycleValue.length() - 1);
+            }
+
+            routineEntity.setRm(rm);
+            routineEntity.setCycleValue(cycleValue.toString());
+        }
+
         // 내용 변경
         if(rq.getContent() != null) {
             String content = rq.getContent();
@@ -787,26 +790,140 @@ public class TodoRoutineService {
             List<TodoEntity> todoList = todoQueryRepository.findTodoListByRoutine(routineEntity);
             for(TodoEntity todo : todoList) {
                 todo.setContent(content);
+                todo.setUpdateDt(today);
             }
             todoRepository.saveAll(todoList);
+
+            routineEntity.setContent(content);
         }
 
         // 시간 변경
-        LocalDateTime now = LocalDateTime.now();
         if(rq.getStartTm() != null || rq.getEndTm() != null) {
             LocalTime newStartTm = rq.getStartTm();
             LocalTime newEndTm = rq.getEndTm();
             for(TodoEntity todoEntity : routineEntity.getTodoEntities()) {
                 todoEntity.setStartTargetTm(newStartTm);
                 todoEntity.setEndTargetTm(newEndTm);
-                todoEntity.setUpdateDt(now);
+                todoEntity.setUpdateDt(today);
                 todoRepository.save(todoEntity);
             }
         }
 
         UpdateRoutineRS result = new UpdateRoutineRS();
-        result.setUpdateDt(now);
+        result.setUpdateDt(today);
         return result;
+    }
+
+    /**
+     * 루틴 사이클 변경 시 새로운 투두 생성 및 기존 투두 논리 삭제
+     * @param cycleType
+     * @param cycleValue
+     * @param routineEntity
+     * @param startDt
+     * @param endDt
+     */
+    @Transactional
+    public void updateRoutineCycle(CycleType cycleType, List<Byte> cycleValue, RoutineEntity routineEntity, LocalDate startDt, LocalDate endDt) {
+
+        List<TodoEntity> todoEntityList = new ArrayList<>();
+
+        // getter 잦은 호출 피하기 위해 각 변수 선언 및 할당
+        String content = routineEntity.getContent();
+        CategoryEntity categoryEntity = routineEntity.getCategoryEntity();
+        Long categoryIdx = categoryEntity.getIdx();
+        UsersEntity usersEntity = routineEntity.getUsersEntity();
+        LocalTime startTargetTm = routineEntity.getStartTargetTm();
+        LocalTime endTargetTm = routineEntity.getEndTargetTm();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 매일
+        if(cycleType.equals(CycleType.EVERY_DAY)) {
+            // 날짜 마다 Todo_ 데이터 추가
+            for(LocalDate date = startDt; !date.isAfter(endDt); date = date.plusDays(1)) {
+                // 기존에 해당 날짜에 해당 루틴 소속 투두 없으면 생성
+                Optional<TodoEntity> opTodo = todoQueryRepository.existTodoByRoutineAndDate(date, routineEntity);
+                if(opTodo == null) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
+                    todoEntityList.add(todo);
+                }
+            }
+        }
+        // 매주
+        else if(cycleType.equals(CycleType.EVERY_WEEK)) {
+            List<DayWeekType> selectedDays = cycleValue.stream()
+                    .map(value -> DayWeekType.fromValue(value.intValue()))
+                    .filter(Objects::nonNull)
+                    .toList();
+
+            for(LocalDate date = startDt; !date.isAfter(endDt); date = date.plusDays(1)) {
+                // 기존에 해당 날짜에 해당 루틴 소속 투두가 있는가
+                Optional<TodoEntity> opTodo = todoQueryRepository.existTodoByRoutineAndDate(date, routineEntity);
+
+                // 현재 날짜의 요일을 DayWeekType으로 변환
+                DayWeekType currentDayType = DayWeekType.fromValue(date.getDayOfWeek().getValue());
+
+                // 선택된 요일인데 기존 투두 없음: 투두 생성
+                if(selectedDays.contains(currentDayType) && opTodo == null) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
+                    todoEntityList.add(todo);
+                }
+                // 선택된 요일이 아닌데 기존 투두 있음: 기존 투두 논리 삭제
+                else if(!selectedDays.contains(currentDayType) && opTodo.isPresent()) {
+                    TodoEntity todo = opTodo.get();
+                    todo.setDeleteDt(now);
+                    todo.setStatus(StatusType.DELETED.getValue());
+                }
+            }
+        }
+        // 매달
+        else if(cycleType.equals(CycleType.EVERY_MONTH)) {
+            List<Integer> selectedDates = cycleValue.stream()
+                    .map(value -> (int) value)
+                    .toList();
+
+            for(LocalDate date = startDt; !date.isAfter(endDt); date = date.plusDays(1)) {
+                // 기존에 해당 날짜에 해당 루틴 소속 투두가 있는가
+                Optional<TodoEntity> opTodo = todoQueryRepository.existTodoByRoutineAndDate(date, routineEntity);
+
+                // 현재 날짜의 일자를 가져옴 (1-31)
+                int dayOfMonth = date.getDayOfMonth();
+
+                // 선택된 날짜인데 기존 투두 없음: 투두 생성
+                if(selectedDates.contains(dayOfMonth) && opTodo == null) {
+                    CreateTodoRQ newTodo = new CreateTodoRQ();
+                    newTodo.setContent(content);
+                    newTodo.setCategoryIdx(categoryIdx);
+                    newTodo.setDate(date);
+                    newTodo.setStartTargetTm(startTargetTm);
+                    newTodo.setEndTargetTm(endTargetTm);
+
+                    TodoEntity todo = createTodoByRoutine(newTodo, categoryEntity, usersEntity, routineEntity);
+                    todoEntityList.add(todo);
+                }
+                // 선택된 날짜가 아닌데 기존 투두 있음: 기존 투두 논리 삭제
+                else if(!selectedDates.contains(dayOfMonth) && opTodo.isPresent()) {
+                    TodoEntity todo = opTodo.get();
+                    todo.setDeleteDt(now);
+                    todo.setStatus(StatusType.DELETED.getValue());
+                }
+            }
+        }
+        routineEntity.addTodos(todoEntityList);
+        routineRepository.save(routineEntity);
     }
 
 
