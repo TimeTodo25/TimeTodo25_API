@@ -2,7 +2,6 @@ package com.pape.timetodo.global.jpa.entity;
 
 
 import com.pape.timetodo.global.constant.MoodType;
-import com.pape.timetodo.global.constant.StatusType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,10 +39,6 @@ public class HomeEntity {
     @Comment(value = "오늘의 목표")
     private String goal; // 목표
 
-    @Column(name = "STATUS", nullable = false)
-    @Comment(value = "상태")
-    private Character status; // 상태 - 삭제여부 등
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
     @Comment(value = "해당 유저")
@@ -52,6 +47,5 @@ public class HomeEntity {
     @PrePersist
     protected void onCreate() {
         this.todayDate = LocalDate.now();
-        this.status = StatusType.NORMAL.getValue();
     }
 }
