@@ -1,14 +1,14 @@
 package com.pape.timetodo.global.security;
 
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.stream.Collectors;
-
+import com.pape.timetodo.global.exception.AppException;
+import com.pape.timetodo.global.exception.ExceptionCode;
+import com.pape.timetodo.global.jpa.repository.UsersRepository;
+import com.pape.timetodo.global.security.model.TokenModel;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,21 +22,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.pape.timetodo.global.exception.AppException;
-import com.pape.timetodo.global.exception.ExceptionCode;
-import com.pape.timetodo.global.jpa.repository.UsersRepository;
-import com.pape.timetodo.global.security.model.TokenModel;
-
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.UnsupportedJwtException;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import jakarta.servlet.http.HttpServletRequest;
-import lombok.extern.slf4j.Slf4j;
+import java.security.Key;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.stream.Collectors;
 
 @PropertySource("classpath:jwt.yml")
 @Service
@@ -66,8 +56,7 @@ public class JwtTokenProvider implements InitializingBean {
         @Value("${expriation-day}") long tokenValidityInDay
     ) {        
         this.tokenValidityInMilliseconds = tokenValidityInMinute * 60 * 1000;
-        // this.tokenValidityInDay = tokenValidityInDay * 1000 * 60 * 60 * 24;
-        this.tokenValidityInDay = 1000;
+        this.tokenValidityInDay = tokenValidityInDay * 1000 * 60 * 60 * 24;
     }
 
 
