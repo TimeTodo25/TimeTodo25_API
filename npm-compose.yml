@@ -1,0 +1,19 @@
+# 서버 새로 시작할 때 최초 한 번만 실행
+# 수동 실행: docker-compose -f npm-compose.yml up -d
+services:
+  nginx-proxy-manager:
+    container_name: npm
+    image: "jc21/nginx-proxy-manager:latest"
+    restart: always
+    ports:
+      - "80:80"     # HTTP 포트
+      - "443:443"   # HTTPS 포트
+      - "81:81"     # NPM 대시보드 포트
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    logging:
+      driver: json-file
+      options:
+        max-size: "100m"
+        max-file: "3"

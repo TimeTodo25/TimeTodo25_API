@@ -44,13 +44,13 @@ jobs:
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
-      - name: 도커 파일 서버에 복사
+      - name: API 서버 compose 파일 복사
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.AWS_SECRET_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml, ./src/main/resources/timetodo2024-key.json, ./data, ./letsencrypt"
+          source: "api-compose.yml, ./src/main/resources/timetodo2024-key.json"
           target: "/home/ubuntu/docker/"
 
       - name: 도커 이미지 빌드 및 푸시
@@ -59,16 +59,18 @@ jobs:
           docker build -f Dockerfile -t harriet99/timetodo-apitest:latest .
           docker push harriet99/timetodo-apitest:latest
 
-      - name: 서버 배포
+      - name: API 서버 배포
         uses: appleboy/ssh-action@master
         id: deploy
         with:
           host: ${{ secrets.AWS_SECRET_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # API 컨테이너만 중지하고 제거 -> 새로 배포 -> 사용하지 않는 이미지 정리
           script: |
             cd /home/ubuntu/docker/
-            docker-compose down
-            docker-compose pull
-            docker-compose up -d --build
+            docker stop timetodo-apitest || true
+            docker rm timetodo-apitest || true
+            docker-compose -f api-compose.yml pull
+            docker-compose -f api-compose.yml up -d
             docker image prune -f
