@@ -1,12 +1,7 @@
 package com.pape.timetodo.domain.main.model.todo;
 
+import com.pape.timetodo.global.base.BaseUpdateRS;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-public class UpdateTodoRS {
-
-    private LocalDateTime updateDt;
-
-}
+public class UpdateTodoRS extends BaseUpdateRS { }

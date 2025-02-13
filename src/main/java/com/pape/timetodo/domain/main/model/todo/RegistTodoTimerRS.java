@@ -1,17 +1,13 @@
 package com.pape.timetodo.domain.main.model.todo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pape.timetodo.global.base.BaseUpdateRS;
 import lombok.Data;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class RegistTodoTimerRS {
+public class RegistTodoTimerRS extends BaseUpdateRS {
 
     private List<Long> timerIdxList; // TimerHistoryIdx List
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updateDt;
 
 }
