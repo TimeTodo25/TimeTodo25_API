@@ -112,10 +112,12 @@ public class DdayService {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        List<DdayEntity> ddayList = ddayRepository.findByUsersEntity(usersEntity);
+        LocalDate date = LocalDate.now();
+        List<DdayEntity> ddayList = ddayQueryRepository.findDdayByUsersEntity(usersEntity, date);
         MyDdayRS result = new MyDdayRS();
         result.setDdayList(ddayList.stream().map(dday -> {
             MyDdayRS.DdayModel model = new MyDdayRS.DdayModel();
+            model.setDdayIdx(dday.getIdx());
             model.setContent(dday.getContent());
             model.setDdayDate(dday.getTargetDt());
             return model;

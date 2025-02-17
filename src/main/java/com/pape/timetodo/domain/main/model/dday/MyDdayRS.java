@@ -13,6 +13,8 @@ public class MyDdayRS {
     @Data
     public static class DdayModel {
 
+        private Long ddayIdx;
+
         private String content;
 
         private LocalDate ddayDate;
