@@ -73,7 +73,7 @@ public class QRoutineEntity extends EntityPathBase<RoutineEntity> {
     public QRoutineEntity(Class<? extends RoutineEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.categoryEntity = inits.isInitialized("categoryEntity") ? new QCategoryEntity(forProperty("categoryEntity"), inits.get("categoryEntity")) : null;
-        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
+        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity"), inits.get("usersEntity")) : null;
     }
 
 }

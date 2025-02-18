@@ -18,6 +18,8 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     private static final long serialVersionUID = 299828286L;
 
+    private static final PathInits INITS = PathInits.DIRECT2;
+
     public static final QUsersEntity usersEntity = new QUsersEntity("usersEntity");
 
     public final BooleanPath accountNonExpired = createBoolean("accountNonExpired");
@@ -46,6 +48,8 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public final StringPath password = createString("password");
 
+    public final QUserPreferencesEntity preferences;
+
     public final StringPath refreshToken = createString("refreshToken");
 
     public final ListPath<RoutineEntity, QRoutineEntity> routineEntity = this.<RoutineEntity, QRoutineEntity>createList("routineEntity", RoutineEntity.class, QRoutineEntity.class, PathInits.DIRECT2);
@@ -59,15 +63,24 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
     public final StringPath username = createString("username");
 
     public QUsersEntity(String variable) {
-        super(UsersEntity.class, forVariable(variable));
+        this(UsersEntity.class, forVariable(variable), INITS);
     }
 
     public QUsersEntity(Path<? extends UsersEntity> path) {
-        super(path.getType(), path.getMetadata());
+        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
     }
 
     public QUsersEntity(PathMetadata metadata) {
-        super(UsersEntity.class, metadata);
+        this(metadata, PathInits.getFor(metadata, INITS));
+    }
+
+    public QUsersEntity(PathMetadata metadata, PathInits inits) {
+        this(UsersEntity.class, metadata, inits);
+    }
+
+    public QUsersEntity(Class<? extends UsersEntity> type, PathMetadata metadata, PathInits inits) {
+        super(type, metadata, inits);
+        this.preferences = inits.isInitialized("preferences") ? new QUserPreferencesEntity(forProperty("preferences"), inits.get("preferences")) : null;
     }
 
 }

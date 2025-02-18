@@ -59,7 +59,7 @@ public class QTermsAgreeEntity extends EntityPathBase<TermsAgreeEntity> {
     public QTermsAgreeEntity(Class<? extends TermsAgreeEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.termsEntity = inits.isInitialized("termsEntity") ? new QTermsEntity(forProperty("termsEntity")) : null;
-        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
+        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity"), inits.get("usersEntity")) : null;
     }
 
 }

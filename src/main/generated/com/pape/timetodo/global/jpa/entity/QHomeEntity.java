@@ -50,7 +50,7 @@ public class QHomeEntity extends EntityPathBase<HomeEntity> {
 
     public QHomeEntity(Class<? extends HomeEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
+        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity"), inits.get("usersEntity")) : null;
     }
 
 }

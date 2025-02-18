@@ -62,7 +62,7 @@ public class QCategoryEntity extends EntityPathBase<CategoryEntity> {
 
     public QCategoryEntity(Class<? extends CategoryEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
+        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity"), inits.get("usersEntity")) : null;
     }
 
 }
