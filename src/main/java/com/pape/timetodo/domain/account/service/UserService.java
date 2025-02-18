@@ -4,14 +4,18 @@ import com.pape.timetodo.domain.account.model.user.NickCheckRQ;
 import com.pape.timetodo.domain.account.model.user.SnsLoginRQ;
 import com.pape.timetodo.domain.account.model.user.SnsLoginRS;
 import com.pape.timetodo.domain.account.model.user.UserRegisterRQ;
+import com.pape.timetodo.global.constant.NotificationType;
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity.AuthorityId;
 import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
+import com.pape.timetodo.global.jpa.entity.UserPreferencesEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
+import com.pape.timetodo.global.jpa.repository.UserPreferencesRepository;
 import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import com.pape.timetodo.global.security.JwtTokenProvider;
 import com.pape.timetodo.global.security.model.TokenModel;
@@ -26,6 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.EnumSet;
 import java.util.Optional;
 
 @Service
@@ -34,6 +39,8 @@ import java.util.Optional;
 public class UserService {
 
     private final UsersRepository usersRepository;
+
+    private final UserPreferencesRepository preferencesRepository;
 
     private final MailQueryRepository mailQueryRepository;
 
@@ -83,9 +90,18 @@ public class UserService {
             .id(authorityId)
             .build();
 
-        usersEntity.setAuthorities(authoritiesEntity);
+        UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
+                .username(rq.getId())
+                .user(usersEntity)
+                .todoSortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
+                .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                .build();
 
-        usersRepository.save(usersEntity);
+        usersEntity.setAuthorities(authoritiesEntity);
+        usersEntity.setPreferences(preferencesEntity);
+
+        usersRepository.save(usersEntity); // casecade.ALL 되어있긴 한데, 내가 볼 때 이게 편해서 일단 둠
+        preferencesRepository.save(preferencesEntity);
 
         return true;
     }
@@ -130,9 +146,18 @@ public class UserService {
                 .id(authorityId)
                 .build();
 
+            UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
+                    .username(platformUsername)
+                    .user(newUser)
+                    .todoSortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
+                    .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                    .build();
+
             newUser.setAuthorities(authoritiesEntity);
+            newUser.setPreferences(preferencesEntity);
 
             usersRepository.save(newUser);
+            preferencesRepository.save(preferencesEntity);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(newUser.getUsername(), newUser.getPassword(), newUser.getAuthorities());
             tokenModel = jwtTokenProvider.createToken(authentication);
