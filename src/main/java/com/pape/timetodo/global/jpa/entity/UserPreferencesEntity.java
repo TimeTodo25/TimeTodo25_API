@@ -36,7 +36,7 @@ public class UserPreferencesEntity {
 
     @Convert(converter = SortTypesConverter.class)
     @Column(name = "CATEGORY_SORT_TYPES")
-    private Set<SortType> todoSortTypes;
+    private Set<SortType> categorySortTypes;
 
     @Convert(converter = NotificationTypesConverter.class)
     @Column(name = "NOTIFICATION_TYPES")

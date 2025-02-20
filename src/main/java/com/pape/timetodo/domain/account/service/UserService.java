@@ -1,9 +1,6 @@
 package com.pape.timetodo.domain.account.service;
 
-import com.pape.timetodo.domain.account.model.user.NickCheckRQ;
-import com.pape.timetodo.domain.account.model.user.SnsLoginRQ;
-import com.pape.timetodo.domain.account.model.user.SnsLoginRS;
-import com.pape.timetodo.domain.account.model.user.UserRegisterRQ;
+import com.pape.timetodo.domain.account.model.user.*;
 import com.pape.timetodo.global.constant.NotificationType;
 import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.exception.AppException;
@@ -30,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.Optional;
 
@@ -93,7 +91,7 @@ public class UserService {
         UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
                 .username(rq.getId())
                 .user(usersEntity)
-                .todoSortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
+                .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                 .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
                 .build();
 
@@ -149,7 +147,7 @@ public class UserService {
             UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
                     .username(platformUsername)
                     .user(newUser)
-                    .todoSortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
+                    .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                     .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
                     .build();
 
@@ -173,4 +171,29 @@ public class UserService {
         return usersRepository.findById(rq.getNickname()).isPresent();
     }
 
+    @Transactional
+    public UpdatePreferenceRS updatePreference(@Valid UpdatePreferenceRQ rq) {
+
+        UsersEntity usersEntity = userUtil.getUsersEntity();
+
+        UserPreferencesEntity preferences = preferencesRepository.findById(usersEntity.getUsername())
+                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+
+        if(rq.getDdaySortType().isUpdate()) {
+            preferences.setDdaySortType(rq.getDdaySortType().getValues());
+        }
+        if(rq.getCategorySortTypes().isUpdate()) {
+            preferences.setCategorySortTypes(rq.getCategorySortTypes().getValues());
+        }
+        if(rq.getNotificationTypes().isUpdate()) {
+            preferences.setNotificationTypes(rq.getNotificationTypes().getValues());
+        }
+
+        preferencesRepository.save(preferences);
+
+        UpdatePreferenceRS result = new UpdatePreferenceRS();
+        result.setUpdateDt(LocalDateTime.now());
+
+        return result;
+    }
 }
