@@ -93,6 +93,8 @@ public class UserService {
                 .user(usersEntity)
                 .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                 .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                .createDt(LocalDateTime.now())
+                .updateDt(LocalDateTime.now())
                 .build();
 
         usersEntity.setAuthorities(authoritiesEntity);
@@ -149,6 +151,8 @@ public class UserService {
                     .user(newUser)
                     .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                     .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                    .createDt(LocalDateTime.now())
+                    .updateDt(LocalDateTime.now())
                     .build();
 
             newUser.setAuthorities(authoritiesEntity);
@@ -189,10 +193,12 @@ public class UserService {
             preferences.setNotificationTypes(rq.getNotificationTypes().getValues());
         }
 
+        LocalDateTime now = LocalDateTime.now();
+        preferences.setUpdateDt(LocalDateTime.now());
         preferencesRepository.save(preferences);
 
         UpdatePreferenceRS result = new UpdatePreferenceRS();
-        result.setUpdateDt(LocalDateTime.now());
+        result.setUpdateDt(now);
 
         return result;
     }
