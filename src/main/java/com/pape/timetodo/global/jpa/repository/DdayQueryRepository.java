@@ -5,6 +5,7 @@ import com.pape.timetodo.global.jpa.entity.DdayEntity;
 import com.pape.timetodo.global.jpa.entity.QDdayEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,5 +54,36 @@ public class DdayQueryRepository {
                 .selectFrom(qDdayEntity)
                 .where(builder)
                 .fetch();
+    }
+
+    /**
+     * todoQueryRepository에도 같은 역할의 함수가 있는데 findDdayTodoByUsersEntity
+     * 반환 모델이 다르고, 호출 순환 문제 때문에 일단은 그냥 둠. TODO: 리팩토링 시 고려할 것
+     */
+    public List<DdayEntity> findDdayByUsersEntity(UsersEntity usersEntity, LocalDate date) {
+
+        QDdayEntity qDdayEntity = QDdayEntity.ddayEntity;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(qDdayEntity.usersEntity.eq(usersEntity));
+        builder.and(qDdayEntity.status.notIn(StatusType.DELETED.getValue()));
+
+        List<DdayEntity> results = query
+                .select(Projections.bean(
+                        DdayEntity.class,
+                        qDdayEntity.idx.as("idx"),
+                        qDdayEntity.content.as("content"),
+                        qDdayEntity.targetDt.as("targetDt")
+                ))
+                .from(qDdayEntity)
+                .where(builder)
+                .fetch();
+
+        return results.stream()
+                .sorted(Comparator
+                        .comparing((DdayEntity d) -> d.getTargetDt().isBefore(date) ? 1 : 0) // 미래 날짜 먼저
+                        .thenComparingLong(d -> Math.abs(ChronoUnit.DAYS.between(date, d.getTargetDt())))
+                )
+                .collect(Collectors.toList());
     }
 }

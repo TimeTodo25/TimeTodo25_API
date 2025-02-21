@@ -1,16 +1,11 @@
 package com.pape.timetodo.domain.main.model.category;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pape.timetodo.global.base.BaseUpdateRS;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-public class CreateCategoryRS {
+public class CreateCategoryRS extends BaseUpdateRS {
 
     private Long categoryIdx;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updateDt;
 
 }

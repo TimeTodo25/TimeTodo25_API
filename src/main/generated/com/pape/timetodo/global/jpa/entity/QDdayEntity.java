@@ -58,7 +58,7 @@ public class QDdayEntity extends EntityPathBase<DdayEntity> {
 
     public QDdayEntity(Class<? extends DdayEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
+        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity"), inits.get("usersEntity")) : null;
     }
 
 }

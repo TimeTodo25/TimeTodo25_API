@@ -1,14 +1,7 @@
 package com.pape.timetodo.domain.main.model.routine;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pape.timetodo.global.base.BaseUpdateRS;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
-public class UpdateRoutineRS {
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime updateDt;
-
-}
+public class UpdateRoutineRS extends BaseUpdateRS { }

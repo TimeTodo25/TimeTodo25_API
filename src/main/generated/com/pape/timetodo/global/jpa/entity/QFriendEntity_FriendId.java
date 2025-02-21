@@ -44,8 +44,8 @@ public class QFriendEntity_FriendId extends BeanPath<FriendEntity.FriendId> {
 
     public QFriendEntity_FriendId(Class<? extends FriendEntity.FriendId> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.friendUsername = inits.isInitialized("friendUsername") ? new QUsersEntity(forProperty("friendUsername")) : null;
-        this.username = inits.isInitialized("username") ? new QUsersEntity(forProperty("username")) : null;
+        this.friendUsername = inits.isInitialized("friendUsername") ? new QUsersEntity(forProperty("friendUsername"), inits.get("friendUsername")) : null;
+        this.username = inits.isInitialized("username") ? new QUsersEntity(forProperty("username"), inits.get("username")) : null;
     }
 
 }

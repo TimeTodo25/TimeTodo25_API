@@ -96,6 +96,9 @@ public class UsersEntity implements UserDetails{
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id.username")
     private List<FriendEntity> friendEntities;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserPreferencesEntity preferences;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;

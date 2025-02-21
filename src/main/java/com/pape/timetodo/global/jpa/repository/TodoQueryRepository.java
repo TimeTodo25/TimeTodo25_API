@@ -13,14 +13,18 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
@@ -31,6 +35,10 @@ public class TodoQueryRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    // 현재 DB 확인 (application.yml에서 설정됨)
+    @Value("${spring.jpa.properties.hibernate.dialect}")
+    private String hibernateDialect;
 
     /**
      * 카테고리별로 회차하며 해당 날짜의 투두 모두 조회
@@ -69,6 +77,7 @@ public class TodoQueryRepository {
             .fetch();
     }
 
+
     /**
     * 디데이 -/+ 계산은 앱단에서 하기로 결정함에 따라,
     * 기존의 남은 날짜 반환하던 로직을 디데이 해당 날짜 반환하도록 수정함
@@ -81,7 +90,7 @@ public class TodoQueryRepository {
         builder.and(qDdayEntity.usersEntity.eq(usersEntity));
         builder.and(qDdayEntity.status.notIn(StatusType.DELETED.getValue()));
 
-        return query
+        List<HomeDdayModel> results = query
                 .select(Projections.bean(
                         HomeDdayModel.class,
                         qDdayEntity.idx.as("idx"),
@@ -90,8 +99,14 @@ public class TodoQueryRepository {
                 ))
                 .from(qDdayEntity)
                 .where(builder)
-                .orderBy(qDdayEntity.targetDt.asc())
                 .fetch();
+
+        return results.stream()
+                .sorted(Comparator
+                        .comparing((HomeDdayModel d) -> d.getTargetDt().isBefore(date) ? 1 : 0) // 미래 날짜 먼저
+                        .thenComparingLong(d -> Math.abs(ChronoUnit.DAYS.between(date, d.getTargetDt())))
+                )
+                .collect(Collectors.toList());
     }
 
 

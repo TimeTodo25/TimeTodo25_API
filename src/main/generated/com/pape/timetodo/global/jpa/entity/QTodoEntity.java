@@ -70,7 +70,7 @@ public class QTodoEntity extends EntityPathBase<TodoEntity> {
         super(type, metadata, inits);
         this.categoryEntity = inits.isInitialized("categoryEntity") ? new QCategoryEntity(forProperty("categoryEntity"), inits.get("categoryEntity")) : null;
         this.routineEntity = inits.isInitialized("routineEntity") ? new QRoutineEntity(forProperty("routineEntity"), inits.get("routineEntity")) : null;
-        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity")) : null;
+        this.usersEntity = inits.isInitialized("usersEntity") ? new QUsersEntity(forProperty("usersEntity"), inits.get("usersEntity")) : null;
     }
 
 }
