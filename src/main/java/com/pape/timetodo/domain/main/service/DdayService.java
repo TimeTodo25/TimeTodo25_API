@@ -169,4 +169,23 @@ public class DdayService {
         }
         ddayRepository.saveAll(ddayList);
     }
+
+    /**
+     * 디데이 완료 혹은 완료 취소
+     * @param idx Long
+     * @return UpdateDdayRS
+     */
+    @Transactional
+    public UpdateDdayRS completeDday(Long idx) {
+
+        DdayEntity dday = ddayRepository.findById(idx).orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+        dday.setCompleted(!dday.getCompleted());
+        dday.setUpdateDt(LocalDateTime.now());
+        ddayRepository.save(dday);
+
+        UpdateDdayRS result = new UpdateDdayRS();
+        result.setUpdateDt(dday.getUpdateDt());
+
+        return result;
+    }
 }

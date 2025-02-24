@@ -94,4 +94,18 @@ public class DdayController {
 
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 디데이 완료 / 완료 취소
+     * @param idx Long
+     * @return UpdateDdayRS
+     */
+    @PostMapping("/complete/{idx}")
+    @Operation(summary = "디데이 완료/취소", description = "디데이를 완료합니다. 이미 true인 상태라면 완료를 취소합니다.")
+    public ResponseEntity<UpdateDdayRS> completedDday(@PathVariable(name = "idx", required = false) @Parameter(name="idx", description = "해당 디데이 IDX", in = ParameterIn.PATH, example = "1") Long idx){
+
+        UpdateDdayRS result = ddayService.completeDday(idx);
+
+        return ResponseEntity.ok().body(result);
+    }
 }
