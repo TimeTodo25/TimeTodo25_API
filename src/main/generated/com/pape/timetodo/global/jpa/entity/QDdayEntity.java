@@ -22,6 +22,8 @@ public class QDdayEntity extends EntityPathBase<DdayEntity> {
 
     public static final QDdayEntity ddayEntity = new QDdayEntity("ddayEntity");
 
+    public final BooleanPath completed = createBoolean("completed");
+
     public final StringPath content = createString("content");
 
     public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);

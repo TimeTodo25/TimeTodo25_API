@@ -1,10 +1,12 @@
 package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.dday.*;
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.DdayEntity;
+import com.pape.timetodo.global.jpa.entity.UserPreferencesEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.DdayQueryRepository;
 import com.pape.timetodo.global.jpa.repository.DdayRepository;
@@ -112,8 +114,11 @@ public class DdayService {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
+        UserPreferencesEntity preferencesEntity = userUtil.findByUsername(usersEntity);
+        List<SortType> ddaySortTypeList = preferencesEntity.getDdaySortType().stream().toList();
+
         LocalDate date = LocalDate.now();
-        List<DdayEntity> ddayList = ddayQueryRepository.findDdayByUsersEntity(usersEntity, date);
+        List<DdayEntity> ddayList = ddayQueryRepository.findDdayByUsersEntity(usersEntity, date, ddaySortTypeList);
         MyDdayRS result = new MyDdayRS();
         result.setDdayList(ddayList.stream().map(dday -> {
             MyDdayRS.DdayModel model = new MyDdayRS.DdayModel();

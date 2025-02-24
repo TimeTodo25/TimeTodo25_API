@@ -30,11 +30,11 @@ public class QUserPreferencesEntity extends EntityPathBase<UserPreferencesEntity
 
     public final SetPath<com.pape.timetodo.global.constant.NotificationType, EnumPath<com.pape.timetodo.global.constant.NotificationType>> notificationTypes = this.<com.pape.timetodo.global.constant.NotificationType, EnumPath<com.pape.timetodo.global.constant.NotificationType>>createSet("notificationTypes", com.pape.timetodo.global.constant.NotificationType.class, EnumPath.class, PathInits.DIRECT2);
 
+    public final NumberPath<Long> preferenceId = createNumber("preferenceId", Long.class);
+
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
 
     public final QUsersEntity user;
-
-    public final StringPath username = createString("username");
 
     public QUserPreferencesEntity(String variable) {
         this(UserPreferencesEntity.class, forVariable(variable), INITS);

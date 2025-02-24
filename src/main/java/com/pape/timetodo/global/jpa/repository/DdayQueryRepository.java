@@ -1,5 +1,6 @@
 package com.pape.timetodo.global.jpa.repository;
 
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.jpa.entity.DdayEntity;
 import com.pape.timetodo.global.jpa.entity.QDdayEntity;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +62,7 @@ public class DdayQueryRepository {
      * todoQueryRepository에도 같은 역할의 함수가 있는데 findDdayTodoByUsersEntity
      * 반환 모델이 다르고, 호출 순환 문제 때문에 일단은 그냥 둠. TODO: 리팩토링 시 고려할 것
      */
-    public List<DdayEntity> findDdayByUsersEntity(UsersEntity usersEntity, LocalDate date) {
+    public List<DdayEntity> findDdayByUsersEntity(UsersEntity usersEntity, LocalDate date, List<SortType> ddaySortTypeList) {
 
         QDdayEntity qDdayEntity = QDdayEntity.ddayEntity;
 
@@ -79,11 +81,26 @@ public class DdayQueryRepository {
                 .where(builder)
                 .fetch();
 
+        // 정렬 기준 List
+        List<Comparator<DdayEntity>> comparators = new ArrayList<>();
+        // SortType 정렬 - 완료된 Dday는 뒤로 정렬
+        if(ddaySortTypeList.contains(SortType.D_COMPLETE_ORDER)) {
+            comparators.add(Comparator.comparing((DdayEntity d) -> d.getCompleted() ? 1 : 0));
+        }
+//        // SortType 정렬 - Dday 등록한 순으로 정렬
+//        if(ddaySortTypeList.contains(SortType.D_REGISTRATION_ORDER))
+//            comparators.add(Comparator.comparing(DdayEntity::getCreateDt));
+        // 기본 정렬 - D-day가 아직 오지 않은 경우가 우선 정렬
+        comparators.add(Comparator.comparing((DdayEntity d) -> d.getTargetDt().isBefore(date) ? 1 : 0));
+        // 기본 정렬 - D-day가 가까울 수록 우선 정렬
+        comparators.add(Comparator.comparingLong(d -> Math.abs(ChronoUnit.DAYS.between(date, d.getTargetDt()))));
+
+        Comparator<DdayEntity> finalComparator = comparators.stream()
+                .reduce(Comparator::thenComparing)
+                .orElseThrow();
+
         return results.stream()
-                .sorted(Comparator
-                        .comparing((DdayEntity d) -> d.getTargetDt().isBefore(date) ? 1 : 0) // 미래 날짜 먼저
-                        .thenComparingLong(d -> Math.abs(ChronoUnit.DAYS.between(date, d.getTargetDt())))
-                )
+                .sorted(finalComparator)
                 .collect(Collectors.toList());
     }
 }

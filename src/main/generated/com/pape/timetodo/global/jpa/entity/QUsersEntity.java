@@ -48,8 +48,6 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public final StringPath password = createString("password");
 
-    public final QUserPreferencesEntity preferences;
-
     public final StringPath refreshToken = createString("refreshToken");
 
     public final ListPath<RoutineEntity, QRoutineEntity> routineEntity = this.<RoutineEntity, QRoutineEntity>createList("routineEntity", RoutineEntity.class, QRoutineEntity.class, PathInits.DIRECT2);
@@ -61,6 +59,8 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
 
     public final StringPath username = createString("username");
+
+    public final QUserPreferencesEntity userPreferences;
 
     public QUsersEntity(String variable) {
         this(UsersEntity.class, forVariable(variable), INITS);
@@ -80,7 +80,7 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public QUsersEntity(Class<? extends UsersEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.preferences = inits.isInitialized("preferences") ? new QUserPreferencesEntity(forProperty("preferences"), inits.get("preferences")) : null;
+        this.userPreferences = inits.isInitialized("userPreferences") ? new QUserPreferencesEntity(forProperty("userPreferences"), inits.get("userPreferences")) : null;
     }
 
 }
