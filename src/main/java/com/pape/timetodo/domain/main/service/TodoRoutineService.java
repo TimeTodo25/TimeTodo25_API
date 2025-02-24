@@ -510,6 +510,22 @@ public class TodoRoutineService {
             usersEntity = userUtil.getUsersEntity();
         }
 
+        if(usersEntity.getUserPreferences().getCategorySortTypes().contains(SortType.C_REGISTRATION_ORDER)) {
+            return categoryRepository.findByUsersEntityOrderByCreateDtAsc(usersEntity).stream()
+                    .map(category -> {
+
+                        HomeCategoryTodoModel categoryTodoModel = new HomeCategoryTodoModel();
+                        categoryTodoModel.setIdx(category.getIdx());
+                        categoryTodoModel.setTitle(category.getTitle());
+                        categoryTodoModel.setMainColor(category.getMainColor());
+                        categoryTodoModel.setPublicStatus(category.getPublicStatus());
+                        categoryTodoModel.setTodoList(category.getTodoEntities());
+
+                        return categoryTodoModel;
+                    })
+                    .collect(Collectors.toList());
+        }
+
         return categoryRepository.findByUsersEntity(usersEntity).stream()
                 .map(category -> {
 

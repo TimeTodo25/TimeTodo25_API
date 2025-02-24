@@ -2,11 +2,13 @@ package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.GetCategoryModel;
 import com.pape.timetodo.domain.main.model.category.*;
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.CategoryEntity;
 import com.pape.timetodo.global.jpa.entity.TodoEntity;
+import com.pape.timetodo.global.jpa.entity.UserPreferencesEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.*;
 import com.pape.timetodo.global.util.UserUtil;
@@ -97,8 +99,10 @@ public class CategoryService {
     public MyCategoryRS getMyCategory() {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
+        UserPreferencesEntity preferencesEntity = usersEntity.getUserPreferences();
+        List<SortType> sortTypeList = preferencesEntity.getCategorySortTypes().stream().toList();
 
-        List<GetCategoryModel> categoryList = categoryQueryRepository.findMyCategoryByUsresEntity(usersEntity).stream()
+        List<GetCategoryModel> categoryList = categoryQueryRepository.findMyCategoryByUsresEntity(usersEntity, sortTypeList).stream()
                 .map(entity -> {
                     GetCategoryModel result = new GetCategoryModel();
                     result.setIdx(entity.getIdx());
