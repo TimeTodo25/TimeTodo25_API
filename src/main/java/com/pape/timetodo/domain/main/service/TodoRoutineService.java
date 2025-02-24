@@ -510,6 +510,8 @@ public class TodoRoutineService {
             usersEntity = userUtil.getUsersEntity();
         }
 
+        boolean todoSort = usersEntity.getUserPreferences().getCategorySortTypes().contains(SortType.C_COMPLETE_ORDER);
+
         if(usersEntity.getUserPreferences().getCategorySortTypes().contains(SortType.C_REGISTRATION_ORDER)) {
             return categoryRepository.findByUsersEntityOrderByCreateDtAsc(usersEntity).stream()
                     .map(category -> {
@@ -519,7 +521,10 @@ public class TodoRoutineService {
                         categoryTodoModel.setTitle(category.getTitle());
                         categoryTodoModel.setMainColor(category.getMainColor());
                         categoryTodoModel.setPublicStatus(category.getPublicStatus());
-                        categoryTodoModel.setTodoList(category.getTodoEntities());
+                        List<TodoEntity> todoList = !todoSort ? category.getTodoEntities() : category.getTodoEntities().stream()
+                                .sorted(Comparator.comparing(todo -> todo.getProgressStatus() == 100))
+                                .toList();
+                        categoryTodoModel.setTodoList(todoList);
 
                         return categoryTodoModel;
                     })
@@ -534,7 +539,10 @@ public class TodoRoutineService {
                     categoryTodoModel.setTitle(category.getTitle());
                     categoryTodoModel.setMainColor(category.getMainColor());
                     categoryTodoModel.setPublicStatus(category.getPublicStatus());
-                    categoryTodoModel.setTodoList(category.getTodoEntities());
+                    List<TodoEntity> todoList = !todoSort ? category.getTodoEntities() : category.getTodoEntities().stream()
+                            .sorted(Comparator.comparing(todo -> todo.getProgressStatus() == 100))
+                            .toList();
+                    categoryTodoModel.setTodoList(todoList);
 
                     return categoryTodoModel;
                 })
