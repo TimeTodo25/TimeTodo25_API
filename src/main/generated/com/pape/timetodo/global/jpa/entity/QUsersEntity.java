@@ -80,7 +80,7 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public QUsersEntity(Class<? extends UsersEntity> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
-        this.userPreferences = inits.isInitialized("userPreferences") ? new QUserPreferencesEntity(forProperty("userPreferences"), inits.get("userPreferences")) : null;
+        this.userPreferences = inits.isInitialized("userPreferences") ? new QUserPreferencesEntity(forProperty("userPreferences")) : null;
     }
 
 }

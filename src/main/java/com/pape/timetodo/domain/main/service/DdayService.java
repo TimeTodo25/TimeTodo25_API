@@ -114,7 +114,7 @@ public class DdayService {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        UserPreferencesEntity preferencesEntity = userUtil.findByUsername(usersEntity);
+        UserPreferencesEntity preferencesEntity = usersEntity.getUserPreferences();
         List<SortType> ddaySortTypeList = preferencesEntity.getDdaySortType().stream().toList();
 
         LocalDate date = LocalDate.now();

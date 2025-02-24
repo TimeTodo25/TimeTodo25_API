@@ -89,8 +89,6 @@ public class UserService {
             .build();
 
         UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
-                .username(rq.getId())
-                .user(usersEntity)
                 .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                 .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
                 .createDt(LocalDateTime.now())
@@ -98,10 +96,10 @@ public class UserService {
                 .build();
 
         usersEntity.setAuthorities(authoritiesEntity);
-        usersEntity.setPreferences(preferencesEntity);
+        usersEntity.setUserPreferences(preferencesEntity);
 
-        usersRepository.save(usersEntity); // casecade.ALL 되어있긴 한데, 내가 볼 때 이게 편해서 일단 둠
         preferencesRepository.save(preferencesEntity);
+        usersRepository.save(usersEntity);
 
         return true;
     }
@@ -147,8 +145,6 @@ public class UserService {
                 .build();
 
             UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
-                    .username(platformUsername)
-                    .user(newUser)
                     .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                     .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
                     .createDt(LocalDateTime.now())
@@ -156,10 +152,10 @@ public class UserService {
                     .build();
 
             newUser.setAuthorities(authoritiesEntity);
-            newUser.setPreferences(preferencesEntity);
+            newUser.setUserPreferences(preferencesEntity);
 
-            usersRepository.save(newUser);
             preferencesRepository.save(preferencesEntity);
+            usersRepository.save(newUser);
 
             Authentication authentication = new UsernamePasswordAuthenticationToken(newUser.getUsername(), newUser.getPassword(), newUser.getAuthorities());
             tokenModel = jwtTokenProvider.createToken(authentication);
@@ -180,8 +176,7 @@ public class UserService {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
-        UserPreferencesEntity preferences = preferencesRepository.findById(usersEntity.getUsername())
-                .orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+        UserPreferencesEntity preferences = usersEntity.getUserPreferences();
 
         if(rq.getDdaySortType().isUpdate()) {
             preferences.setDdaySortType(rq.getDdaySortType().getValues());

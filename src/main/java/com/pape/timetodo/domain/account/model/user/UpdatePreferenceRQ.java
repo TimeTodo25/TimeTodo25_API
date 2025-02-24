@@ -13,7 +13,7 @@ public class UpdatePreferenceRQ {
             example = """
             {
               "update": true,
-              "values": ["D_REGISTRATION_ORDER", "D_COMPLETE_ORDER", "D_SWIPE_CHECK"]
+              "values": ["D_COMPLETE_ORDER", "D_SWIPE_CHECK"]
             }
             """)
     private DdaySortPreference ddaySortType;

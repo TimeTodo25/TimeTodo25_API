@@ -18,8 +18,6 @@ public class QUserPreferencesEntity extends EntityPathBase<UserPreferencesEntity
 
     private static final long serialVersionUID = 1675526371L;
 
-    private static final PathInits INITS = PathInits.DIRECT2;
-
     public static final QUserPreferencesEntity userPreferencesEntity = new QUserPreferencesEntity("userPreferencesEntity");
 
     public final SetPath<com.pape.timetodo.global.constant.SortType, EnumPath<com.pape.timetodo.global.constant.SortType>> categorySortTypes = this.<com.pape.timetodo.global.constant.SortType, EnumPath<com.pape.timetodo.global.constant.SortType>>createSet("categorySortTypes", com.pape.timetodo.global.constant.SortType.class, EnumPath.class, PathInits.DIRECT2);
@@ -34,27 +32,16 @@ public class QUserPreferencesEntity extends EntityPathBase<UserPreferencesEntity
 
     public final DateTimePath<java.time.LocalDateTime> updateDt = createDateTime("updateDt", java.time.LocalDateTime.class);
 
-    public final QUsersEntity user;
-
     public QUserPreferencesEntity(String variable) {
-        this(UserPreferencesEntity.class, forVariable(variable), INITS);
+        super(UserPreferencesEntity.class, forVariable(variable));
     }
 
     public QUserPreferencesEntity(Path<? extends UserPreferencesEntity> path) {
-        this(path.getType(), path.getMetadata(), PathInits.getFor(path.getMetadata(), INITS));
+        super(path.getType(), path.getMetadata());
     }
 
     public QUserPreferencesEntity(PathMetadata metadata) {
-        this(metadata, PathInits.getFor(metadata, INITS));
-    }
-
-    public QUserPreferencesEntity(PathMetadata metadata, PathInits inits) {
-        this(UserPreferencesEntity.class, metadata, inits);
-    }
-
-    public QUserPreferencesEntity(Class<? extends UserPreferencesEntity> type, PathMetadata metadata, PathInits inits) {
-        super(type, metadata, inits);
-        this.user = inits.isInitialized("user") ? new QUsersEntity(forProperty("user"), inits.get("user")) : null;
+        super(UserPreferencesEntity.class, metadata);
     }
 
 }

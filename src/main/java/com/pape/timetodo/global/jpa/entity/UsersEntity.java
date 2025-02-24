@@ -77,6 +77,10 @@ public class UsersEntity implements UserDetails{
     @Comment(value = "상태")
     private Character status;
 
+    @OneToOne
+    @JoinColumn(name = "PREFERENCE_IDX", referencedColumnName = "IDX")
+    private UserPreferencesEntity userPreferences;
+
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
     private Set<AuthoritiesEntity> authorities;
@@ -95,9 +99,6 @@ public class UsersEntity implements UserDetails{
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id.username")
     private List<FriendEntity> friendEntities;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserPreferencesEntity preferences;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
