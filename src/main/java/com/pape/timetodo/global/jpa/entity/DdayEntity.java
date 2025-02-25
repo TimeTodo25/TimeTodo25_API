@@ -53,6 +53,10 @@ public class DdayEntity {
     @Comment(value = "상태")
     private Character status; // 상태 - 삭제여부 등
 
+    @Column(name = "COMPLETED", nullable = false)
+    @Comment(value = "완료 여부")
+    private Boolean completed; // 완료 여부
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
     @Comment(value = "등록유저")
@@ -64,5 +68,6 @@ public class DdayEntity {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
         this.status = StatusType.NORMAL.getValue();
+        this.completed = false;
     }
 }

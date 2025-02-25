@@ -9,6 +9,7 @@ import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -121,8 +122,10 @@ public class TodoRoutineService {
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
         LocalDate date = rq.getDate();
+        UserPreferencesEntity preferencesEntity = usersEntity.getUserPreferences();
+        List<SortType> ddaySortTypeList = preferencesEntity.getDdaySortType().stream().toList();
 
-        List<HomeDdayModel> ddayList = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity, date);
+        List<HomeDdayModel> ddayList = todoQueryRepository.findDdayTodoByUsersEntity(usersEntity, date, ddaySortTypeList);
 
         List<HomeCategoryTodoModel> categoryTodoList = this.getMyCategoryList(usersEntity);
 
@@ -507,6 +510,27 @@ public class TodoRoutineService {
             usersEntity = userUtil.getUsersEntity();
         }
 
+        boolean todoSort = usersEntity.getUserPreferences().getCategorySortTypes().contains(SortType.C_COMPLETE_ORDER);
+
+        if(usersEntity.getUserPreferences().getCategorySortTypes().contains(SortType.C_REGISTRATION_ORDER)) {
+            return categoryRepository.findByUsersEntityOrderByCreateDtAsc(usersEntity).stream()
+                    .map(category -> {
+
+                        HomeCategoryTodoModel categoryTodoModel = new HomeCategoryTodoModel();
+                        categoryTodoModel.setIdx(category.getIdx());
+                        categoryTodoModel.setTitle(category.getTitle());
+                        categoryTodoModel.setMainColor(category.getMainColor());
+                        categoryTodoModel.setPublicStatus(category.getPublicStatus());
+                        List<TodoEntity> todoList = !todoSort ? category.getTodoEntities() : category.getTodoEntities().stream()
+                                .sorted(Comparator.comparing(todo -> todo.getProgressStatus() == 100))
+                                .toList();
+                        categoryTodoModel.setTodoList(todoList);
+
+                        return categoryTodoModel;
+                    })
+                    .collect(Collectors.toList());
+        }
+
         return categoryRepository.findByUsersEntity(usersEntity).stream()
                 .map(category -> {
 
@@ -515,7 +539,10 @@ public class TodoRoutineService {
                     categoryTodoModel.setTitle(category.getTitle());
                     categoryTodoModel.setMainColor(category.getMainColor());
                     categoryTodoModel.setPublicStatus(category.getPublicStatus());
-                    categoryTodoModel.setTodoList(category.getTodoEntities());
+                    List<TodoEntity> todoList = !todoSort ? category.getTodoEntities() : category.getTodoEntities().stream()
+                            .sorted(Comparator.comparing(todo -> todo.getProgressStatus() == 100))
+                            .toList();
+                    categoryTodoModel.setTodoList(todoList);
 
                     return categoryTodoModel;
                 })

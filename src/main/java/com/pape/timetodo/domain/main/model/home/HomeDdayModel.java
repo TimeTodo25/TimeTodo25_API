@@ -15,4 +15,6 @@ public class HomeDdayModel {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate targetDt;
 
+    private Boolean completed;
+
 }

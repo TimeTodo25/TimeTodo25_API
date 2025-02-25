@@ -2,6 +2,7 @@ package com.pape.timetodo.global.jpa.repository;
 
 import com.pape.timetodo.domain.main.model.home.HomeDdayModel;
 import com.pape.timetodo.domain.main.model.home.HomeTodoModel;
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.jpa.entity.*;
 import com.querydsl.core.BooleanBuilder;
@@ -13,7 +14,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +21,7 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -35,10 +36,6 @@ public class TodoQueryRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    // 현재 DB 확인 (application.yml에서 설정됨)
-    @Value("${spring.jpa.properties.hibernate.dialect}")
-    private String hibernateDialect;
 
     /**
      * 카테고리별로 회차하며 해당 날짜의 투두 모두 조회
@@ -82,7 +79,7 @@ public class TodoQueryRepository {
     * 디데이 -/+ 계산은 앱단에서 하기로 결정함에 따라,
     * 기존의 남은 날짜 반환하던 로직을 디데이 해당 날짜 반환하도록 수정함
      */
-    public List<HomeDdayModel> findDdayTodoByUsersEntity(UsersEntity usersEntity, LocalDate date) {
+    public List<HomeDdayModel> findDdayTodoByUsersEntity(UsersEntity usersEntity, LocalDate date, List<SortType> ddaySortTypeList) {
 
         QDdayEntity qDdayEntity = QDdayEntity.ddayEntity;
 
@@ -95,17 +92,30 @@ public class TodoQueryRepository {
                         HomeDdayModel.class,
                         qDdayEntity.idx.as("idx"),
                         qDdayEntity.content.as("content"),
-                        qDdayEntity.targetDt.as("targetDt")
+                        qDdayEntity.targetDt.as("targetDt"),
+                        qDdayEntity.completed.as("completed")
                 ))
                 .from(qDdayEntity)
                 .where(builder)
                 .fetch();
 
+        // 정렬 기준 List
+        List<Comparator<HomeDdayModel>> comparators = new ArrayList<>();
+        // SortType 정렬 - 완료된 Dday는 뒤로 정렬
+        if(ddaySortTypeList.contains(SortType.D_COMPLETE_ORDER)) {
+            comparators.add(Comparator.comparing((HomeDdayModel d) -> d.getCompleted() ? 1 : 0));
+        }
+        // 기본 정렬 - D-day가 아직 오지 않은 경우가 우선 정렬
+        comparators.add(Comparator.comparing((HomeDdayModel d) -> d.getTargetDt().isBefore(date) ? 1 : 0));
+        // 기본 정렬 - D-day가 가까울 수록 우선 정렬
+        comparators.add(Comparator.comparingLong(d -> Math.abs(ChronoUnit.DAYS.between(date, d.getTargetDt()))));
+
+        Comparator<HomeDdayModel> finalComparator = comparators.stream()
+                .reduce(Comparator::thenComparing)
+                .orElseThrow();
+
         return results.stream()
-                .sorted(Comparator
-                        .comparing((HomeDdayModel d) -> d.getTargetDt().isBefore(date) ? 1 : 0) // 미래 날짜 먼저
-                        .thenComparingLong(d -> Math.abs(ChronoUnit.DAYS.between(date, d.getTargetDt())))
-                )
+                .sorted(finalComparator)
                 .collect(Collectors.toList());
     }
 

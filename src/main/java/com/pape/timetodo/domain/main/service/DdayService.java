@@ -1,10 +1,12 @@
 package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.dday.*;
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.DdayEntity;
+import com.pape.timetodo.global.jpa.entity.UserPreferencesEntity;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.DdayQueryRepository;
 import com.pape.timetodo.global.jpa.repository.DdayRepository;
@@ -112,8 +114,11 @@ public class DdayService {
 
         UsersEntity usersEntity = userUtil.getUsersEntity();
 
+        UserPreferencesEntity preferencesEntity = usersEntity.getUserPreferences();
+        List<SortType> ddaySortTypeList = preferencesEntity.getDdaySortType().stream().toList();
+
         LocalDate date = LocalDate.now();
-        List<DdayEntity> ddayList = ddayQueryRepository.findDdayByUsersEntity(usersEntity, date);
+        List<DdayEntity> ddayList = ddayQueryRepository.findDdayByUsersEntity(usersEntity, date, ddaySortTypeList);
         MyDdayRS result = new MyDdayRS();
         result.setDdayList(ddayList.stream().map(dday -> {
             MyDdayRS.DdayModel model = new MyDdayRS.DdayModel();
@@ -163,5 +168,24 @@ public class DdayService {
             dday.setStatus(deleted);
         }
         ddayRepository.saveAll(ddayList);
+    }
+
+    /**
+     * 디데이 완료 혹은 완료 취소
+     * @param idx Long
+     * @return UpdateDdayRS
+     */
+    @Transactional
+    public UpdateDdayRS completeDday(Long idx) {
+
+        DdayEntity dday = ddayRepository.findById(idx).orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
+        dday.setCompleted(!dday.getCompleted());
+        dday.setUpdateDt(LocalDateTime.now());
+        ddayRepository.save(dday);
+
+        UpdateDdayRS result = new UpdateDdayRS();
+        result.setUpdateDt(dday.getUpdateDt());
+
+        return result;
     }
 }

@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -22,13 +23,10 @@ import java.util.Set;
 public class UserPreferencesEntity {
 
     @Id
-    @Column(name = "USERNAME")
-    private String username;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "USERNAME")
-    private UsersEntity user;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "IDX")
+    @Comment(value = "PK고유키")
+    private Long preferenceId;
 
     @Convert(converter = SortTypesConverter.class)
     @Column(name = "DDAY_SORT_TYPE")

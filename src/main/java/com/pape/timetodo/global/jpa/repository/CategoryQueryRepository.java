@@ -1,5 +1,6 @@
 package com.pape.timetodo.global.jpa.repository;
 
+import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.jpa.entity.CategoryEntity;
 import com.pape.timetodo.global.jpa.entity.QCategoryEntity;
@@ -34,7 +35,7 @@ public class CategoryQueryRepository {
             .fetchOne();
     }
 
-    public List<CategoryEntity> findMyCategoryByUsresEntity(UsersEntity usersEntity){
+    public List<CategoryEntity> findMyCategoryByUsresEntity(UsersEntity usersEntity, List<SortType> categorySortTypeList){
         QCategoryEntity qCategoryEntity = QCategoryEntity.categoryEntity;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -42,9 +43,17 @@ public class CategoryQueryRepository {
         builder.and(qCategoryEntity.deleteDt.isNull());
         builder.and(qCategoryEntity.status.notIn(StatusType.DELETED.getValue())); // 여러 상태 나열 가능
 
+        if(categorySortTypeList.contains(SortType.C_REGISTRATION_ORDER)) {
+            return query
+                    .selectFrom(qCategoryEntity)
+                    .where(builder)
+                    .orderBy(qCategoryEntity.createDt.asc())
+                    .fetch();
+        }
+
         return query
-            .selectFrom(qCategoryEntity)
-            .where(builder)
-            .fetch();
+                .selectFrom(qCategoryEntity)
+                .where(builder)
+                .fetch();
     }
 }
