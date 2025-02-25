@@ -1,23 +1,18 @@
 package com.pape.timetodo.global.common.mail.service;
 
+import com.pape.timetodo.global.common.mail.model.CertMailTemplateModel;
+import com.pape.timetodo.global.common.mail.model.MailSendModel;
+import com.pape.timetodo.global.common.template.service.TemplateService;
+import com.pape.timetodo.global.jpa.entity.MailEntity;
+import com.pape.timetodo.global.jpa.repository.MailRepository;
+import com.pape.timetodo.global.util.RandomUtil;
+import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
-import com.pape.timetodo.global.common.mail.model.CertMailTemplateModel;
-import com.pape.timetodo.global.common.mail.model.MailSendModel;
-import com.pape.timetodo.global.common.template.service.TemplateService;
-import com.pape.timetodo.global.exception.AppException;
-import com.pape.timetodo.global.exception.ExceptionCode;
-import com.pape.timetodo.global.jpa.entity.MailEntity;
-import com.pape.timetodo.global.jpa.repository.MailRepository;
-import com.pape.timetodo.global.util.RandomUtil;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -44,7 +39,7 @@ public class MailService {
         CertMailTemplateModel certMailTemplateParam = new CertMailTemplateModel();
         certMailTemplateParam.setCertNum(certNumBuilder.toString());
 
-        String title = "타임투두두 인증메일 입니다.";
+        String title = "타임투두 인증메일 입니다.";
         String message = templateService.getHtmlToString(certMailTemplateParam);
 
         MailSendModel mailSendModel = new MailSendModel();

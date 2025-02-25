@@ -75,4 +75,18 @@ public class UserController {
         return ResponseEntity.ok().body(result);
     }
 
+    /**
+     * 비밀번호 수정
+     * @param rq NewPasswordRQ
+     * @return NewPasswordRS
+     */
+    @PostMapping("/password")
+    @Operation(summary = "비밀번호 수정", description = "비밀번호 수정 기능입니다.")
+    public ResponseEntity<NewPasswordRS> findId(@Valid @RequestBody NewPasswordRQ rq) {
+
+        NewPasswordRS result = accountUserService.updatePassword(rq);
+
+        return ResponseEntity.ok().body(result);
+    }
+
 }

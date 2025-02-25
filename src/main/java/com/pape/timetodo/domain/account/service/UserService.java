@@ -197,4 +197,33 @@ public class UserService {
 
         return result;
     }
+
+    @Transactional
+    public NewPasswordRS updatePassword(@Valid NewPasswordRQ rq) {
+
+        NewPasswordRS result = new NewPasswordRS();
+
+        Optional<UsersEntity> user = usersRepository.findById(rq.getId());
+        if(user.isEmpty()) {
+            result.setAnswer("회원 정보가 존재하지 않습니다.");
+            return result;
+        }
+
+        UsersEntity newUser = UsersEntity.builder()
+                .username(user.get().getUsername())
+                .password(passwordEncoder.encode(rq.getPassword()))
+                .email(user.get().getEmail())
+                .nickname(user.get().getNickname())
+                .enabled(user.get().isEnabled())
+                .accountNonExpired(user.get().isAccountNonExpired())
+                .accountNonLock(user.get().isAccountNonLocked())
+                .passFailCount(0)
+                .build();
+
+        usersRepository.save(newUser);
+
+        result.setAnswer("비밀 번호가 수정되었습니다.");
+
+        return result;
+    }
 }
