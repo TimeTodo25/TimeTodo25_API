@@ -1,17 +1,15 @@
 package com.pape.timetodo.global.jpa.repository;
 
-import java.util.Optional;
-
-import org.springframework.stereotype.Repository;
-
 import com.pape.timetodo.global.jpa.entity.MailEntity;
-import com.pape.timetodo.global.jpa.entity.QMailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
+import com.pape.timetodo.global.jpa.entity.QMailEntity;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 @Slf4j

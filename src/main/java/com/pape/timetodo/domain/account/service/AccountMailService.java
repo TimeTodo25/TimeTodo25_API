@@ -2,13 +2,17 @@ package com.pape.timetodo.domain.account.service;
 
 import com.pape.timetodo.domain.account.model.mail.CertificationMailRQ;
 import com.pape.timetodo.domain.account.model.mail.SendMailRQ;
+import com.pape.timetodo.domain.account.model.user.IdFindingRS;
 import com.pape.timetodo.global.common.mail.model.MailSendModel;
 import com.pape.timetodo.global.common.mail.service.MailService;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
+import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
+import com.pape.timetodo.global.jpa.repository.MailRepository;
+import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -26,13 +31,16 @@ public class AccountMailService {
 
     private final MailQueryRepository mailQueryRepository;
 
-    private short SMS_AUTH_TIME = 5; // 문자 인증시간 5분
+    private final UsersRepository usersRepository;
+
+    private final MailRepository mailRepository;
+
+    private short SMS_AUTH_TIME = 5; // 메일 인증시간 5분
     
     
     public Boolean sendCertMail(SendMailRQ rq, MailType mailType) throws Exception {
         // 메일 Model Create
         MailSendModel mailSendModel = mailService.createCertiMail(rq.getEmail());
-        
 
         // 메일 Entity
         MailEntity entity = MailEntity.builder()
@@ -81,4 +89,35 @@ public class AccountMailService {
         return true;
     }
 
+    @Transactional
+    public IdFindingRS findId(CertificationMailRQ rq) {
+
+        Boolean isCerificated = this.certificationMail(rq, MailType.UPDATE_CERT);
+
+        IdFindingRS idFindingRS = new IdFindingRS();
+        if(!isCerificated) {
+            idFindingRS.setUserId(null);
+        } else {
+            Optional<UsersEntity> usersEntity = usersRepository.findByEmail(rq.getEmail());
+            if(usersEntity.isEmpty()) {
+                idFindingRS.setUserId("회원 정보가 존재하지 않습니다.");
+                return idFindingRS;
+            }
+
+            String username = usersEntity.get().getUsername();
+            if(username.startsWith("NAVER_") && username.length() > 20) {
+                idFindingRS.setUserId("Naver 소셜 로그인 회원입니다.");
+            }
+            else {
+                idFindingRS.setUserId(username.substring(0, 3) + "*".repeat(username.length()-3));
+            }
+        }
+
+        return idFindingRS;
+    }
+
+    public boolean isNotCertMail(SendMailRQ rq) {
+        Optional<UsersEntity> usersEntity = usersRepository.findByEmail(rq.getEmail());
+        return usersEntity.isEmpty();
+    }
 }

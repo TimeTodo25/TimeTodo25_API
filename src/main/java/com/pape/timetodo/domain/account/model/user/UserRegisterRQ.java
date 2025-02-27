@@ -12,7 +12,7 @@ import lombok.Data;
 public class UserRegisterRQ {
 
     @NotBlank
-    @Length(min = 0, max = 50)
+    @Length(min = 6, max = 50)
     @Schema(description = "아이디", example = "TEST_USER_ID", implementation = String.class)
     private String id;
 
