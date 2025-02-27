@@ -11,6 +11,7 @@ import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
+import com.pape.timetodo.global.jpa.repository.MailRepository;
 import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,9 @@ public class AccountMailService {
 
     private final UsersRepository usersRepository;
 
-    private short SMS_AUTH_TIME = 5; // 문자 인증시간 5분
+    private final MailRepository mailRepository;
+
+    private short SMS_AUTH_TIME = 5; // 메일 인증시간 5분
     
     
     public Boolean sendCertMail(SendMailRQ rq, MailType mailType) throws Exception {
@@ -89,7 +92,7 @@ public class AccountMailService {
     @Transactional
     public IdFindingRS findId(CertificationMailRQ rq) {
 
-        Boolean isCerificated = this.certificationMail(rq, MailType.REGISTER_CERT);
+        Boolean isCerificated = this.certificationMail(rq, MailType.UPDATE_CERT);
 
         IdFindingRS idFindingRS = new IdFindingRS();
         if(!isCerificated) {
@@ -115,6 +118,6 @@ public class AccountMailService {
 
     public boolean isNotCertMail(SendMailRQ rq) {
         Optional<UsersEntity> usersEntity = usersRepository.findByEmail(rq.getEmail());
-        return usersEntity.isPresent();
+        return usersEntity.isEmpty();
     }
 }

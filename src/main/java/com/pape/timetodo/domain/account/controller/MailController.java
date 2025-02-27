@@ -72,16 +72,19 @@ public class MailController {
      */
     @PostMapping("/send/finding")
     @Operation(summary = "아이디/비밀번호 찾기 인증메일 발송", description = "아이디/비밀번호를 찾을 때 사용하는 인증용 메일발송 입니다.")
-    public DeferredResult<Boolean> sendFindingCertMail(@Valid @RequestBody SendMailRQ rq) throws Exception {
+    public DeferredResult<String> sendFindingCertMail(@Valid @RequestBody SendMailRQ rq) throws Exception {
 
-        if(mailService.isNotCertMail(rq)) throw new AppException("해당하는 회원 정보가 없습니다.");
+        DeferredResult<String> deferredResult = new DeferredResult<>();
 
-        DeferredResult<Boolean> deferredResult = new DeferredResult<>();
+        if(mailService.isNotCertMail(rq)) {
+            deferredResult.setResult("회원 정보가 존재하지 않습니다.");
+            return deferredResult;
+        }
 
         new Thread(() -> {
             try {
                 Boolean result = mailService.sendCertMail(rq, MailType.UPDATE_CERT);
-                deferredResult.setResult(result);
+                deferredResult.setResult(result.toString());
             } catch (Exception e) {
                 log.error("", e);
                 throw new AppException(ExceptionCode.INTERNAL_SERVER_ERROR);
@@ -96,8 +99,8 @@ public class MailController {
      * @param rq IdFindingRQ
      * @return Boolean
      */
-    @PostMapping("/certification/id")
-    @Operation(summary = "아이디 찾기 메일 인증", description = "아이디를 찾을 때 사용하는 메일 인증 입니다.")
+    @PutMapping("/certification/id")
+    @Operation(summary = "아이디/비밀번호 찾기 메일 인증", description = "아이디/비밀번호를 찾을 때 사용하는 메일 인증 입니다.")
     public ResponseEntity<IdFindingRS> findId(@Valid @RequestBody CertificationMailRQ rq) {
 
         IdFindingRS result = mailService.findId(rq);
