@@ -209,16 +209,9 @@ public class UserService {
             return result;
         }
 
-        UsersEntity newUser = UsersEntity.builder()
-                .username(user.get().getUsername())
-                .password(passwordEncoder.encode(rq.getPassword()))
-                .email(user.get().getEmail())
-                .nickname(user.get().getNickname())
-                .enabled(user.get().isEnabled())
-                .accountNonExpired(user.get().isAccountNonExpired())
-                .accountNonLock(user.get().isAccountNonLocked())
-                .passFailCount(0)
-                .build();
+        UsersEntity newUser = user.get();
+        newUser.setPassword(passwordEncoder.encode(rq.getPassword()));
+        newUser.setUpdateDt(LocalDateTime.now());
 
         usersRepository.save(newUser);
 
