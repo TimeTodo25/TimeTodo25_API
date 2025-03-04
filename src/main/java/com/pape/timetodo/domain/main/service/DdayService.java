@@ -179,7 +179,7 @@ public class DdayService {
     public UpdateDdayRS completeDday(Long idx) {
 
         DdayEntity dday = ddayRepository.findById(idx).orElseThrow(() -> new AppException(ExceptionCode.DATA_NOT_FIND));
-        dday.setCompleted(!dday.getCompleted());
+        dday.setCompleted(!dday.isCompleted());
         dday.setUpdateDt(LocalDateTime.now());
         ddayRepository.save(dday);
 

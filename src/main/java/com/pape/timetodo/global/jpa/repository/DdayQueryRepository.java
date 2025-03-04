@@ -85,7 +85,7 @@ public class DdayQueryRepository {
         List<Comparator<DdayEntity>> comparators = new ArrayList<>();
         // SortType 정렬 - 완료된 Dday는 뒤로 정렬
         if(ddaySortTypeList.contains(SortType.D_COMPLETE_ORDER)) {
-            comparators.add(Comparator.comparing((DdayEntity d) -> d.getCompleted() ? 1 : 0));
+            comparators.add(Comparator.comparing((DdayEntity d) -> d.isCompleted() ? 1 : 0));
         }
 //        // SortType 정렬 - Dday 등록한 순으로 정렬
 //        if(ddaySortTypeList.contains(SortType.D_REGISTRATION_ORDER))
