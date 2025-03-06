@@ -55,7 +55,7 @@ public class DdayEntity {
 
     @Column(name = "COMPLETED", nullable = false)
     @Comment(value = "완료 여부")
-    private Boolean completed; // 완료 여부
+    private boolean completed; // 완료 여부
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
