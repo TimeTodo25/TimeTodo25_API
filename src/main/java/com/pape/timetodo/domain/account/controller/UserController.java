@@ -48,13 +48,13 @@ public class UserController {
     }
 
     /**
-     * 사용자 이름 중복 확인
+     * 사용자 아이디 중복 확인
      * @param rq NickCheckRQ
      * @return Boolean
      */
     @PostMapping("/nickname/check")
-    @Operation(summary = "닉네임 중복 체크 [중복 = True, 중복아님 = False]", description = "이름 중복 확인기능 입니다.")
-    public ResponseEntity<Boolean> isDuplicated(@Valid @RequestBody NickCheckRQ rq) {
+    @Operation(summary = "아이디 중복 체크 [중복 = True, 중복아님 = False]", description = "아이디 중복 확인기능 입니다.")
+    public ResponseEntity<Boolean> isDuplicated(@Valid @RequestBody UsernameCheckRQ rq) {
 
         Boolean result = accountUserService.isDuplicated(rq);
 

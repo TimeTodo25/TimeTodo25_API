@@ -167,8 +167,8 @@ public class UserService {
         return result;
     }
 
-    public boolean isDuplicated(NickCheckRQ rq) {
-        return usersRepository.findById(rq.getNickname()).isPresent();
+    public boolean isDuplicated(UsernameCheckRQ rq) {
+        return usersRepository.findById(rq.getUsername()).isPresent();
     }
 
     @Transactional
