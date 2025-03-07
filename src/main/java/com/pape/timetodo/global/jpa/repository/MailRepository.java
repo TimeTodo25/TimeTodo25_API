@@ -8,4 +8,5 @@ import com.pape.timetodo.global.jpa.entity.MailEntity;
 @Repository
 public interface MailRepository extends JpaRepository<MailEntity, Long>{
 
+    boolean existsMailEntityByEmail(String email);
 }

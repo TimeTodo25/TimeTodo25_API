@@ -11,7 +11,6 @@ import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
 import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
-import com.pape.timetodo.global.jpa.repository.MailRepository;
 import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +31,6 @@ public class AccountMailService {
     private final MailQueryRepository mailQueryRepository;
 
     private final UsersRepository usersRepository;
-
-    private final MailRepository mailRepository;
 
     private short SMS_AUTH_TIME = 5; // 메일 인증시간 5분
     
@@ -119,5 +116,9 @@ public class AccountMailService {
     public boolean isNotCertMail(SendMailRQ rq) {
         Optional<UsersEntity> usersEntity = usersRepository.findByEmail(rq.getEmail());
         return usersEntity.isEmpty();
+    }
+
+    public boolean isAlreadyExist(SendMailRQ rq) {
+        return mailService.isAlreadyExist(rq.getEmail());
     }
 }

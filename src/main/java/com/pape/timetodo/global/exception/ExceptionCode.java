@@ -13,7 +13,7 @@ public enum ExceptionCode {
 	DATA_NOT_FIND("DT001", 400,"데이터를 찾을수 없습니다."),
 	DATA_DUPLICATE("DT002", 400, "중복 데이터가 존재합니다."),
 	DATA_NO("DT003", 500, "데이터 미존재"),
-	EMAIL_DUPLICATE("DT004", 400, "가입된 이메일이 있습니다."),
+	EMAIL_DUPLICATE("DT004", 401, "가입된 이메일이 있습니다."),
 	EMAIL_NOT_SEND("DT005", 400, "해당 메일로 발신한 메일 내역이 없습니다."),
 	DATA_DELETE("DT006", 400, "삭제된 데이터입니다."),
 
