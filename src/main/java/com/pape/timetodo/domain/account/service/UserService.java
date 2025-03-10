@@ -210,6 +210,9 @@ public class UserService {
             return result;
         }
 
+        users.setPassFailCount(0);
+        usersRepository.save(users);
+
         logging.setType("SUCCESS");
         logging.setMessage("로그인 성공");
         loggingRepository.save(logging);
