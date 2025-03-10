@@ -140,6 +140,7 @@ public class UsersEntity implements UserDetails{
         this.updateDt = LocalDateTime.now();
         this.enabled = true;
         this.status = StatusType.NORMAL.getValue();
+        this.passFailCount = 0;
     }
    
 }

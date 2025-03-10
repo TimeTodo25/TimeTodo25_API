@@ -89,6 +89,9 @@ public class UserController {
         return ResponseEntity.ok().body(result);
     }
 
+    /**
+     * 회원 탈퇴
+     */
     @GetMapping("/withdraw")
     @Operation(summary = "회원탈퇴", description = "회원탈퇴 기능입니다.")
     public void withdraw() {
