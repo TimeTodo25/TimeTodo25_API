@@ -185,7 +185,8 @@ public class UserService {
             return result;
         }
 
-        if(userWrapper.get().getPassFailCount() == 5) {
+        // TODO: 회원 비활성화 안 했음 - 나중에 비활성화된 경우 다른 기기에서도 강제 로그아웃 시키는 등 액션 추가되면 수정할 것
+        if(userWrapper.get().getPassFailCount() >= 5) {
             result.setMessage("비밀번호 5회 이상 틀림: 잠긴 회원이므로 비밀번호 변경 요청");
             return result;
         }
