@@ -5,12 +5,10 @@ import com.pape.timetodo.global.constant.NotificationType;
 import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
-import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity;
+import com.pape.timetodo.global.jpa.entity.*;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity.AuthorityId;
-import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
-import com.pape.timetodo.global.jpa.entity.UserPreferencesEntity;
-import com.pape.timetodo.global.jpa.entity.UsersEntity;
+import com.pape.timetodo.global.jpa.repository.LoggingRepository;
 import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
 import com.pape.timetodo.global.jpa.repository.UserPreferencesRepository;
 import com.pape.timetodo.global.jpa.repository.UsersRepository;
@@ -43,6 +41,8 @@ public class UserService {
     private final UserPreferencesRepository preferencesRepository;
 
     private final MailQueryRepository mailQueryRepository;
+
+    private final LoggingRepository loggingRepository;
 
     private final UserUtil userUtil;
 
@@ -171,6 +171,7 @@ public class UserService {
         return result;
     }
 
+    @Transactional
     public String userLogin(@Valid UserLoginRQ rq) {
         String id = rq.getId();
         String pw = rq.getPassword();
@@ -185,13 +186,27 @@ public class UserService {
         }
 
         UsersEntity userOne = users.get();
+        LoggingEntity logging = new LoggingEntity();
+        logging.setIp(rq.getIp());
+        logging.setCreateDt(LocalDateTime.now());
+        logging.setUsername(userOne.getUsername());
+
         if(!userOne.getPassword().equals(passwordEncoder.encode(pw))) {
+
             int cnt = userOne.getPassFailCount()+1;
             userOne.setPassFailCount(cnt);
             usersRepository.save(userOne);
+
+            logging.setType("FAIL");
+            logging.setMessage("비밀번호 틀림");
+            loggingRepository.save(logging);
+
             return "비밀번호 "+cnt+"회 틀림";
         }
 
+        logging.setType("SUCCESS");
+        logging.setMessage("로그인 성공");
+        loggingRepository.save(logging);
         return "환영합니다";
     }
 

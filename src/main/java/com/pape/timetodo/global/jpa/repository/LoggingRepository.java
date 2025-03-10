@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.pape.timetodo.global.jpa.entity.LoggingEntity;
 
 @Repository
-public interface LoggingRepository extends JpaRepository<LoggingEntity, Integer>{
+public interface LoggingRepository extends JpaRepository<LoggingEntity, Long>{
 
 }

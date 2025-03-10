@@ -18,4 +18,8 @@ public class UserLoginRQ {
     @Schema(description = "비밀번호", example = "TEST_USER_PASSWORD", implementation = String.class)
     private String password;
 
+    @NotNull
+    @Schema(description = "IP 주소", example = "127.0.0.1", implementation = String.class)
+    private String ip;
+
 }

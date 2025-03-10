@@ -1,16 +1,10 @@
 package com.pape.timetodo.global.jpa.entity;
 
-import java.time.LocalDateTime;
-
+import jakarta.persistence.*;
+import lombok.Data;
 import org.hibernate.annotations.Comment;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "LOGGING")
@@ -21,7 +15,7 @@ public class LoggingEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "IDX")
     @Comment(value = "로깅 IDX")
-    private Integer idx;
+    private Long idx;
 
     @Column(name = "TYPE", nullable = false, length = 20)
     @Comment(value = "로깅 타입")
