@@ -21,6 +21,7 @@ import com.pape.timetodo.global.util.UserUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -218,5 +220,29 @@ public class UserService {
         result.setAnswer("비밀 번호가 수정되었습니다.");
 
         return result;
+    }
+
+    /**
+     * 탈퇴 시 회원 정보 논리 삭제
+     */
+    @Transactional
+    public void withdraw() {
+        UsersEntity user = userUtil.getUsersEntity();
+        user.setEmail(user.getEmail()+"_deleted");
+        user.setEnabled(false);
+        user.setDeleteDt(LocalDateTime.now());
+    }
+
+    /**
+     * 탈퇴 30일 후 회원 정보 물리 삭제
+     * 매일 자정 직후 실행
+     */
+    @Scheduled(cron = "5 0 0 * * *") // 매일 자정 5초
+    @Transactional
+    public void deleteUser() {
+        LocalDateTime withdrawDate = LocalDateTime.now().minusDays(30);
+        List<UsersEntity> withdrawUsers = usersRepository.findAllByDeleteDtBefore(withdrawDate);
+        if(!withdrawUsers.isEmpty())
+            usersRepository.deleteAll(withdrawUsers);
     }
 }
