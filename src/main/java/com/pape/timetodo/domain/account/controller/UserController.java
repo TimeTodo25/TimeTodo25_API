@@ -54,9 +54,9 @@ public class UserController {
      */
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "일반 로그인")
-    public ResponseEntity<String> login(@Valid @RequestBody UserLoginRQ rq){
+    public ResponseEntity<LoginRS> login(@Valid @RequestBody UserLoginRQ rq){
 
-        String result = accountUserService.userLogin(rq);
+        LoginRS result = accountUserService.userLogin(rq);
 
         return ResponseEntity.ok().body(result);
     }

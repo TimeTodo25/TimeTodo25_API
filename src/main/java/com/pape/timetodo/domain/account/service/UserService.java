@@ -172,42 +172,54 @@ public class UserService {
     }
 
     @Transactional
-    public String userLogin(@Valid UserLoginRQ rq) {
+    public LoginRS userLogin(@Valid UserLoginRQ rq) {
+        LoginRS result = new LoginRS();
+        result.setTokenModel(null);
+
         String id = rq.getId();
         String pw = rq.getPassword();
-        Optional<UsersEntity> users = usersRepository.findById(id);
+        Optional<UsersEntity> userWrapper = usersRepository.findById(id);
 
-        if(users.isEmpty()) {
-            return "아이디 틀림";
+        if(userWrapper.isEmpty()) {
+            result.setMessage("아이디 틀림");
+            return result;
         }
 
-        if(users.get().getPassFailCount() == 5) {
-            return "비밀번호 5회 이상 틀림: 잠긴 회원이므로 비밀번호 변경 요청";
+        if(userWrapper.get().getPassFailCount() == 5) {
+            result.setMessage("비밀번호 5회 이상 틀림: 잠긴 회원이므로 비밀번호 변경 요청");
+            return result;
         }
 
-        UsersEntity userOne = users.get();
+        UsersEntity users = userWrapper.get();
         LoggingEntity logging = new LoggingEntity();
         logging.setIp(rq.getIp());
         logging.setCreateDt(LocalDateTime.now());
-        logging.setUsername(userOne.getUsername());
+        logging.setUsername(users.getUsername());
 
-        if(!userOne.getPassword().equals(passwordEncoder.encode(pw))) {
+        if(!users.getPassword().equals(passwordEncoder.encode(pw))) {
 
-            int cnt = userOne.getPassFailCount()+1;
-            userOne.setPassFailCount(cnt);
-            usersRepository.save(userOne);
+            int cnt = users.getPassFailCount()+1;
+            users.setPassFailCount(cnt);
+            usersRepository.save(users);
 
             logging.setType("FAIL");
             logging.setMessage("비밀번호 틀림");
             loggingRepository.save(logging);
 
-            return "비밀번호 "+cnt+"회 틀림";
+            result.setMessage("비밀번호 "+cnt+"회 틀림");
+            return result;
         }
 
         logging.setType("SUCCESS");
         logging.setMessage("로그인 성공");
         loggingRepository.save(logging);
-        return "환영합니다";
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword(), users.getAuthorities());
+        TokenModel tokenModel = jwtTokenProvider.createToken(authentication);
+
+        result.setMessage("로그인 성공: 환영합니다");
+        result.setTokenModel(tokenModel);
+        return result;
     }
 
     public boolean isDuplicated(UsernameCheckRQ rq) {
