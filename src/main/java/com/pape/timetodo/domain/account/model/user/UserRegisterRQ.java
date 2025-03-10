@@ -28,4 +28,7 @@ public class UserRegisterRQ {
     @Schema(description = "닉네임", example = "타임투투", implementation = String.class)
     private String nickname;
 
+    @NotNull
+    @Schema(description = "선택약관 동의", example = "true", implementation = boolean.class)
+    private boolean optionTermsAgreed;
 }

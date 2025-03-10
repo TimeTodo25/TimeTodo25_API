@@ -93,6 +93,7 @@ public class UserService {
         UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
                 .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                 .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                .optionTermsAgreed(rq.isOptionTermsAgreed()) // 선택 약관 동의 여부
                 .createDt(LocalDateTime.now())
                 .updateDt(LocalDateTime.now())
                 .build();
@@ -149,6 +150,7 @@ public class UserService {
             UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
                     .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                     .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                    .optionTermsAgreed(rq.isOptionTermsAgreed()) // 선택 약관 동의 여부
                     .createDt(LocalDateTime.now())
                     .updateDt(LocalDateTime.now())
                     .build();
