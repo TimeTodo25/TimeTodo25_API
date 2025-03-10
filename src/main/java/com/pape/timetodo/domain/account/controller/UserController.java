@@ -48,6 +48,20 @@ public class UserController {
     }
 
     /**
+     * 일반 로그인
+     * @param rq UserLoginRQ
+     * @return String
+     */
+    @PostMapping("/login")
+    @Operation(summary = "로그인", description = "일반 로그인")
+    public ResponseEntity<String> login(@Valid @RequestBody UserLoginRQ rq){
+
+        String result = accountUserService.userLogin(rq);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
      * 사용자 아이디 중복 확인
      * @param rq NickCheckRQ
      * @return Boolean

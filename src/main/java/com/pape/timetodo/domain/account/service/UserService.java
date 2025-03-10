@@ -171,6 +171,30 @@ public class UserService {
         return result;
     }
 
+    public String userLogin(@Valid UserLoginRQ rq) {
+        String id = rq.getId();
+        String pw = rq.getPassword();
+        Optional<UsersEntity> users = usersRepository.findById(id);
+
+        if(users.isEmpty()) {
+            return "아이디 틀림";
+        }
+
+        if(users.get().getPassFailCount() == 5) {
+            return "비밀번호 5회 이상 틀림: 잠긴 회원이므로 비밀번호 변경 요청";
+        }
+
+        UsersEntity userOne = users.get();
+        if(!userOne.getPassword().equals(passwordEncoder.encode(pw))) {
+            int cnt = userOne.getPassFailCount()+1;
+            userOne.setPassFailCount(cnt);
+            usersRepository.save(userOne);
+            return "비밀번호 "+cnt+"회 틀림";
+        }
+
+        return "환영합니다";
+    }
+
     public boolean isDuplicated(UsernameCheckRQ rq) {
         return usersRepository.findById(rq.getUsername()).isPresent();
     }
@@ -215,6 +239,7 @@ public class UserService {
 
         UsersEntity newUser = user.get();
         newUser.setPassword(passwordEncoder.encode(rq.getPassword()));
+        newUser.setPassFailCount(0);
         newUser.setUpdateDt(LocalDateTime.now());
 
         usersRepository.save(newUser);
