@@ -3,7 +3,7 @@ CREATE TABLE `USER_PREFERENCES` (
   `DDAY_SORT_TYPE` varchar(255) COMMENT 'D-day 정렬 타입',
   `CATEGORY_SORT_TYPES` varchar(255) COMMENT '카테고리 정렬 타입',
   `NOTIFICATION_TYPES` varchar(255) COMMENT '알림 타입',
-  'OPTION_TERMS_AGREED' tinyint(1) NOT NULL COMMENT '선택 약관 동의 여부',
+  `OPTION_TERMS_AGREED` tinyint(1) NOT NULL COMMENT '선택 약관 동의 여부',
   `CREATE_DT` datetime(6) NOT NULL COMMENT '생성일시',
   `UPDATE_DT` datetime(6) NOT NULL COMMENT '수정일시',
   PRIMARY KEY (`IDX`)
