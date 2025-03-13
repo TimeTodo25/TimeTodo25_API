@@ -25,6 +25,10 @@ public class SnsLoginRQ {
     @Schema(description = "플랫폼 타입 [NAVER, GOOGLE]", example = "NAVER", implementation = PlatformType.class)
     private PlatformType platformType;
 
+    @NotNull
+    @Schema(description = "선택약관 동의", example = "true", implementation = boolean.class)
+    private boolean optionTermsAgreed;
+
     
     @Getter
     @RequiredArgsConstructor

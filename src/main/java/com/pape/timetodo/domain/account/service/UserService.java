@@ -5,15 +5,10 @@ import com.pape.timetodo.global.constant.NotificationType;
 import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
-import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity;
+import com.pape.timetodo.global.jpa.entity.*;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity.AuthorityId;
-import com.pape.timetodo.global.jpa.entity.MailEntity;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
-import com.pape.timetodo.global.jpa.entity.UserPreferencesEntity;
-import com.pape.timetodo.global.jpa.entity.UsersEntity;
-import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
-import com.pape.timetodo.global.jpa.repository.UserPreferencesRepository;
-import com.pape.timetodo.global.jpa.repository.UsersRepository;
+import com.pape.timetodo.global.jpa.repository.*;
 import com.pape.timetodo.global.security.JwtTokenProvider;
 import com.pape.timetodo.global.security.model.TokenModel;
 import com.pape.timetodo.global.security.model.UserType;
@@ -21,6 +16,7 @@ import com.pape.timetodo.global.util.UserUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -41,6 +38,10 @@ public class UserService {
     private final UserPreferencesRepository preferencesRepository;
 
     private final MailQueryRepository mailQueryRepository;
+
+    private final LoggingRepository loggingRepository;
+
+    private final AuthorityRepository authorityRepository;
 
     private final UserUtil userUtil;
 
@@ -91,6 +92,7 @@ public class UserService {
         UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
                 .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                 .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                .optionTermsAgreed(rq.isOptionTermsAgreed()) // 선택 약관 동의 여부
                 .createDt(LocalDateTime.now())
                 .updateDt(LocalDateTime.now())
                 .build();
@@ -147,6 +149,7 @@ public class UserService {
             UserPreferencesEntity preferencesEntity = UserPreferencesEntity.builder()
                     .categorySortTypes(EnumSet.noneOf(SortType.class))  // 정렬 기본값 설정 - none
                     .notificationTypes(EnumSet.noneOf(NotificationType.class))  // 알림 기본값 설정 - none
+                    .optionTermsAgreed(rq.isOptionTermsAgreed()) // 선택 약관 동의 여부
                     .createDt(LocalDateTime.now())
                     .updateDt(LocalDateTime.now())
                     .build();
@@ -167,8 +170,63 @@ public class UserService {
         return result;
     }
 
-    public boolean isDuplicated(NickCheckRQ rq) {
-        return usersRepository.findById(rq.getNickname()).isPresent();
+    @Transactional
+    public LoginRS userLogin(@Valid UserLoginRQ rq) {
+        LoginRS result = new LoginRS();
+        result.setTokenModel(null);
+
+        String id = rq.getId();
+        String pw = rq.getPassword();
+        Optional<UsersEntity> userWrapper = usersRepository.findById(id);
+
+        if(userWrapper.isEmpty()) {
+            result.setMessage("아이디 틀림");
+            return result;
+        }
+
+        // TODO: 회원 비활성화 안 했음 - 나중에 비활성화된 경우 다른 기기에서도 강제 로그아웃 시키는 등 액션 추가되면 수정할 것
+        if(userWrapper.get().getPassFailCount() >= 5) {
+            result.setMessage("비밀번호 5회 이상 틀림: 잠긴 회원이므로 비밀번호 변경 요청");
+            return result;
+        }
+
+        UsersEntity users = userWrapper.get();
+        LoggingEntity logging = new LoggingEntity();
+        logging.setIp(rq.getIp());
+        logging.setCreateDt(LocalDateTime.now());
+        logging.setUsername(users.getUsername());
+
+        if(!users.getPassword().equals(passwordEncoder.encode(pw))) {
+
+            int cnt = users.getPassFailCount()+1;
+            users.setPassFailCount(cnt);
+            usersRepository.save(users);
+
+            logging.setType("FAIL");
+            logging.setMessage("비밀번호 틀림");
+            loggingRepository.save(logging);
+
+            result.setMessage("비밀번호 "+cnt+"회 틀림");
+            return result;
+        }
+
+        users.setPassFailCount(0);
+        usersRepository.save(users);
+
+        logging.setType("SUCCESS");
+        logging.setMessage("로그인 성공");
+        loggingRepository.save(logging);
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword(), users.getAuthorities());
+        TokenModel tokenModel = jwtTokenProvider.createToken(authentication);
+
+        result.setMessage("로그인 성공: 환영합니다");
+        result.setTokenModel(tokenModel);
+        return result;
+    }
+
+    public boolean isDuplicated(UsernameCheckRQ rq) {
+        return usersRepository.findById(rq.getUsername()).isPresent();
     }
 
     @Transactional
@@ -211,6 +269,7 @@ public class UserService {
 
         UsersEntity newUser = user.get();
         newUser.setPassword(passwordEncoder.encode(rq.getPassword()));
+        newUser.setPassFailCount(0);
         newUser.setUpdateDt(LocalDateTime.now());
 
         usersRepository.save(newUser);
@@ -218,5 +277,34 @@ public class UserService {
         result.setAnswer("비밀 번호가 수정되었습니다.");
 
         return result;
+    }
+
+    /**
+     * 탈퇴 시 회원 정보 논리 삭제
+     */
+    @Transactional
+    public void withdraw() {
+        UsersEntity user = userUtil.getUsersEntity();
+        user.setEmail(user.getEmail()+"_deleted");
+        user.setEnabled(false);
+        user.setDeleteDt(LocalDateTime.now());
+    }
+
+    /**
+     * 탈퇴 30일 후 회원 정보 물리 삭제
+     * 매일 자정 직후 실행
+     */
+    @Scheduled(cron = "5 0 0 * * *") // 매일 자정 5초
+    @Transactional
+    public void deleteUser() {
+        LocalDateTime withdrawDate = LocalDateTime.now().minusDays(30);
+        List<UsersEntity> withdrawUsers = usersRepository.findAllByDeleteDtBefore(withdrawDate);
+
+        if(!withdrawUsers.isEmpty()) {
+            for (UsersEntity user : withdrawUsers) {
+                authorityRepository.deleteAllByIdUsername(user.getUsername());
+            }
+            usersRepository.deleteAll(withdrawUsers);
+        }
     }
 }

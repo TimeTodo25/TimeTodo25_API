@@ -1,16 +1,5 @@
 package com.pape.timetodo.global.security;
 
-import java.io.IOException;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pape.timetodo.global.base.BaseErrorModel;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -19,9 +8,15 @@ import com.pape.timetodo.global.jpa.entity.UsersEntity;
 import com.pape.timetodo.global.jpa.repository.LoggingQueryRepository;
 import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import com.pape.timetodo.global.security.model.LoginRQ;
-import com.pape.timetodo.global.util.JsonUtils;
-
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 @Component
 @Slf4j
@@ -42,7 +37,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
         LoginRQ loginRQ = (LoginRQ)request.getSession().getAttribute(AuthConstants.LOGIN_INFO_SESSION.getValue());
 
         log.warn("exception => {}", exception.getMessage());
-        log.warn("username => {}", loginRQ.getUsername());
+        log.warn("username => {}", loginRQ.getId());
 
         FailType failType = FailType.fromMessage(exception.getMessage());
 
@@ -75,7 +70,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
                 logging.setType(LoggingType.LOGIN_WRONG_PW.getValue());
                 logging.setMessage("비밀번호를 틀렸습니다.");
 
-                UsersEntity users = usersRepository.findById(loginRQ.getUsername()).get();
+                UsersEntity users = usersRepository.findById(loginRQ.getId()).get();
 
                 int loginFailCount = users.getPassFailCount();
 

@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class NickCheckRQ {
+public class UsernameCheckRQ {
 
     @NotNull
-    @Schema(description = "닉네임", example = "타임투두", implementation = String.class)
-    private String nickname;
+    @Schema(description = "아이디(username)", example = "타임투두", implementation = String.class)
+    private String username;
 }

@@ -54,7 +54,8 @@ public class SecurityConfig {
             "/v1/mail/certification/register",
             "/v1/mail/send/finding",
             "/v1/mail/certification/id",
-            "/v1/noti/receive/agree"
+            "/v1/noti/receive/agree",
+            "/v1/user/password", // 이게 여기 있는 게 맞냐... 난 모르겠다...
     };
 
      private final String[] AUTHENTICATION_URL = {
@@ -92,7 +93,7 @@ public class SecurityConfig {
 
              // User - 회원가입, 로그인, 닉네임 중복검사 제외
              "/v1/user/preference/update",
-             "/v1/user/password",
+             //"/v1/user/password",
 
      };
 

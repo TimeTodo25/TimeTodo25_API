@@ -93,4 +93,7 @@ public class MailService {
         }).start();
     }
 
+    public boolean isAlreadyExist(String email) {
+        return mailRepository.existsMailEntityByEmail(email);
+    }
 }

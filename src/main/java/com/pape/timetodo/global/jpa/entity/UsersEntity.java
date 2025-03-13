@@ -77,24 +77,27 @@ public class UsersEntity implements UserDetails{
     @Comment(value = "상태")
     private Character status;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "PREFERENCE_IDX", referencedColumnName = "IDX")
     private UserPreferencesEntity userPreferences;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME", insertable = false, updatable = false)
     private Set<AuthoritiesEntity> authorities;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TodoEntity> todoEntities;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoutineEntity> routineEntity;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryEntity> categoryEntities;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DdayEntity> ddayEntities;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HomeEntity> homeEntities;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "id.username")
@@ -138,7 +141,9 @@ public class UsersEntity implements UserDetails{
     protected void onCreate() {
         this.createDt = LocalDateTime.now();
         this.updateDt = LocalDateTime.now();
+        this.enabled = true;
         this.status = StatusType.NORMAL.getValue();
+        this.passFailCount = 0;
     }
    
 }

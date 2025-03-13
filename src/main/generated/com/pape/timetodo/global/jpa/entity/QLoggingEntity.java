@@ -23,7 +23,7 @@ public class QLoggingEntity extends EntityPathBase<LoggingEntity> {
 
     public final StringPath credentials = createString("credentials");
 
-    public final NumberPath<Integer> idx = createNumber("idx", Integer.class);
+    public final NumberPath<Long> idx = createNumber("idx", Long.class);
 
     public final StringPath ip = createString("ip");
 
