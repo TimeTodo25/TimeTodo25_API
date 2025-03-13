@@ -58,7 +58,7 @@ public class DdayEntity {
     private boolean completed; // 완료 여부
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
+    @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME", nullable = false)
     @Comment(value = "등록유저")
     private UsersEntity usersEntity;
 

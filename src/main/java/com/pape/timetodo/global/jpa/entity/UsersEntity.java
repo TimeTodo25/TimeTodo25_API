@@ -82,7 +82,7 @@ public class UsersEntity implements UserDetails{
     private UserPreferencesEntity userPreferences;
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME")
+    @JoinColumn(name = "USERNAME", referencedColumnName = "USERNAME", insertable = false, updatable = false)
     private Set<AuthoritiesEntity> authorities;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -93,6 +93,9 @@ public class UsersEntity implements UserDetails{
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryEntity> categoryEntities;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DdayEntity> ddayEntities;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "usersEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HomeEntity> homeEntities;

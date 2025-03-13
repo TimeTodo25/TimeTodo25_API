@@ -8,10 +8,7 @@ import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.*;
 import com.pape.timetodo.global.jpa.entity.AuthoritiesEntity.AuthorityId;
 import com.pape.timetodo.global.jpa.entity.MailEntity.MailType;
-import com.pape.timetodo.global.jpa.repository.LoggingRepository;
-import com.pape.timetodo.global.jpa.repository.MailQueryRepository;
-import com.pape.timetodo.global.jpa.repository.UserPreferencesRepository;
-import com.pape.timetodo.global.jpa.repository.UsersRepository;
+import com.pape.timetodo.global.jpa.repository.*;
 import com.pape.timetodo.global.security.JwtTokenProvider;
 import com.pape.timetodo.global.security.model.TokenModel;
 import com.pape.timetodo.global.security.model.UserType;
@@ -43,6 +40,8 @@ public class UserService {
     private final MailQueryRepository mailQueryRepository;
 
     private final LoggingRepository loggingRepository;
+
+    private final AuthorityRepository authorityRepository;
 
     private final UserUtil userUtil;
 
@@ -300,7 +299,12 @@ public class UserService {
     public void deleteUser() {
         LocalDateTime withdrawDate = LocalDateTime.now().minusDays(30);
         List<UsersEntity> withdrawUsers = usersRepository.findAllByDeleteDtBefore(withdrawDate);
-        if(!withdrawUsers.isEmpty())
+
+        if(!withdrawUsers.isEmpty()) {
+            for (UsersEntity user : withdrawUsers) {
+                authorityRepository.deleteAllByIdUsername(user.getUsername());
+            }
             usersRepository.deleteAll(withdrawUsers);
+        }
     }
 }

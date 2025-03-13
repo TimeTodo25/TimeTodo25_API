@@ -32,6 +32,8 @@ public class QUsersEntity extends EntityPathBase<UsersEntity> {
 
     public final DateTimePath<java.time.LocalDateTime> createDt = createDateTime("createDt", java.time.LocalDateTime.class);
 
+    public final ListPath<DdayEntity, QDdayEntity> ddayEntities = this.<DdayEntity, QDdayEntity>createList("ddayEntities", DdayEntity.class, QDdayEntity.class, PathInits.DIRECT2);
+
     public final DateTimePath<java.time.LocalDateTime> deleteDt = createDateTime("deleteDt", java.time.LocalDateTime.class);
 
     public final StringPath email = createString("email");
