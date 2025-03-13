@@ -1,14 +1,5 @@
 package com.pape.timetodo.global.security;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
@@ -17,12 +8,18 @@ import com.pape.timetodo.global.jpa.repository.UsersRepository;
 import com.pape.timetodo.global.security.model.LoginRQ;
 import com.pape.timetodo.global.security.model.LoginRS;
 import com.pape.timetodo.global.security.model.TokenModel;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.io.IOException;
+import java.util.Optional;
 
 @Slf4j
 public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilter{
@@ -51,7 +48,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
             request.getSession().setAttribute(AuthConstants.LOGIN_INFO_SESSION.getValue(), users);
 
-            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(users.getUsername(), users.getPassword());
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(users.getId(), users.getPassword());
 
             return authenticationManager.authenticate(usernamePasswordAuthenticationToken);
         } catch (IOException e) {
