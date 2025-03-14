@@ -95,6 +95,8 @@ public class SecurityConfig {
              "/v1/user/preference/update",
              //"/v1/user/password",
 
+             // Sync
+             "/v1/sync/all",
      };
 
 
