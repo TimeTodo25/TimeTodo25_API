@@ -30,7 +30,7 @@ public class UserUtil {
     public UsersEntity getUsersEntity(){
         
         return usersRepository.findById(jwtTokenProvider.getSubject(jwtTokenProvider.getHeaderToken()))
-            // .orElseThrow(() -> new AppException(ExceptionCode.NOT_FOUND_USER)) // 추후 다시 해제
+            // .orElseThrow(() -> new AppException(ExceptionCode.NOT_FOUND_USER)) // TODO: 추후 다시 해제
             .orElse(this.anonymousUser());
     }
 
