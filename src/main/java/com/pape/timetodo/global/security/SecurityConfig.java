@@ -64,6 +64,7 @@ public class SecurityConfig {
              "/v1/todo/home",
              "/v1/todo/*/delete",
              "/v1/todo/update",
+             "/v1/todo/update/progress",
              "/v1/todo/regist/todo/timer",
              "/v1/todo/detail/*",
              "v1/todo/detail/*/timer",
