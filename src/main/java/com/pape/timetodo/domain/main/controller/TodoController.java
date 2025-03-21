@@ -83,6 +83,20 @@ public class TodoController {
     }
 
     /**
+     * Todo_ 진행도 업데이트
+     * @param rq UpdateTodoProgressRQ
+     * @return UpdateTodoRS
+     */
+    @PutMapping("/update/progress")
+    @Operation(summary = "투두 진행도 업데이트", description = "투두 진행도를 업데이트합니다.")
+    public ResponseEntity<UpdateTodoRS> updateTodoProgress(@Valid @RequestBody UpdateTodoProgressRQ rq){
+
+        UpdateTodoRS result = todoRoutineService.updateTodoProgress(rq);
+
+        return ResponseEntity.ok().body(result);
+    }
+
+    /**
      * Todo_ 타이머 데이터 등록
      * @param rq RegistTodoTimerRQ
      * @return RegistTodoTimerRS

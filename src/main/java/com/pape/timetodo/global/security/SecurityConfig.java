@@ -64,6 +64,7 @@ public class SecurityConfig {
              "/v1/todo/home",
              "/v1/todo/*/delete",
              "/v1/todo/update",
+             "/v1/todo/update/progress",
              "/v1/todo/regist/todo/timer",
              "/v1/todo/detail/*",
              "v1/todo/detail/*/timer",
@@ -95,6 +96,8 @@ public class SecurityConfig {
              "/v1/user/preference/update",
              //"/v1/user/password",
 
+             // Sync
+             "/v1/sync/all",
      };
 
 
@@ -139,7 +142,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("X-Requested-With", "Content-Type", "Authorization", "X-XSRF-token"));
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);

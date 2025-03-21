@@ -113,12 +113,8 @@ public class AccountMailService {
         return idFindingRS;
     }
 
-    public boolean isNotCertMail(SendMailRQ rq) {
+    public boolean isAlreadyExistUsersMail(SendMailRQ rq) {
         Optional<UsersEntity> usersEntity = usersRepository.findByEmail(rq.getEmail());
-        return usersEntity.isEmpty();
-    }
-
-    public boolean isAlreadyExist(SendMailRQ rq) {
-        return mailService.isAlreadyExist(rq.getEmail());
+        return usersEntity.isPresent();
     }
 }

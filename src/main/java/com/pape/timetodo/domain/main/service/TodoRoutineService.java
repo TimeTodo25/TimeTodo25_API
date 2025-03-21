@@ -620,6 +620,28 @@ public class TodoRoutineService {
     }
 
     /**
+     * TODO_ 진행도 업데이트
+     * @param rq UpdateTodoProgressRQ
+     * @return UpdateTodoRS
+     */
+    @Transactional
+    public UpdateTodoRS updateTodoProgress(UpdateTodoProgressRQ rq) {
+
+        TodoEntity todoEntity = this.getMyTodoData(rq.getIdx());
+
+        ArrayList<Integer> progress = new ArrayList<>(Arrays.asList(0, 50, 100));
+        if(!progress.contains(rq.getProgressStatus())) todoEntity.setProgressStatus(0); // 숫자 제대로 안 오면 그냥 0으로
+        todoEntity.setProgressStatus(rq.getProgressStatus());
+        todoEntity.setUpdateDt(LocalDateTime.now());
+        todoRepository.save(todoEntity);
+
+        UpdateTodoRS result = new UpdateTodoRS();
+        result.setUpdateDt(todoEntity.getUpdateDt());
+
+        return result;
+    }
+
+    /**
      * TODO_ 시간기록 등록
      * @param rq RegistTodoTimerRQ
      * @return RegistTodoTimerRS

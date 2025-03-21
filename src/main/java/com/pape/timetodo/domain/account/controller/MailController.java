@@ -35,7 +35,7 @@ public class MailController {
     @Operation(summary = "회원가입 인증메일 발송", description = "유저의 계정을 추가할 때 사용하는 메일발송 입니다.")
     public DeferredResult<Boolean> sendCertMail(@Valid @RequestBody SendMailRQ rq) throws Exception{
 
-        if(mailService.isAlreadyExist(rq)) throw new AppException(ExceptionCode.EMAIL_DUPLICATE);
+        if(mailService.isAlreadyExistUsersMail(rq)) throw new AppException(ExceptionCode.EMAIL_DUPLICATE);
 
         DeferredResult<Boolean> deferredResult = new DeferredResult<>();
 
@@ -78,7 +78,7 @@ public class MailController {
 
         DeferredResult<String> deferredResult = new DeferredResult<>();
 
-        if(mailService.isNotCertMail(rq)) {
+        if(!mailService.isAlreadyExistUsersMail(rq)) {
             deferredResult.setResult("회원 정보가 존재하지 않습니다.");
             return deferredResult;
         }
