@@ -63,9 +63,9 @@ public class DataSyncService {
             }
 
             // 투두 타이머 없는데 Status가 P면 삭제, 아니면 Status U로 수정 (P: 루틴에서 벗어남 + 진행도 0)
-            List<TodoEntity> todosPreDelete = todoRepository.findByUsersEntityAndStatus(user, StatusType.PRE_DELETED.getValue());
+            List<TodoEntity> todosPreDelete = todoRepository.findByUsersEntityAndStatus(user, StatusType.PRE_DELETED.getValue()); // **
             for(TodoEntity todo : todosPreDelete) {
-                if(timerRepository.existsByTodoEntity(todo)) {
+                if(timerRepository.existsByTodoEntity(todo) || todo.getProgressStatus() > 1) {
                     todo.setStatus(StatusType.UPDATED.getValue());
                     todoRepository.save(todo);
                 } else {
