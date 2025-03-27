@@ -49,6 +49,9 @@ public enum ExceptionCode {
 
 	EXTERNAL_API_ERROR("EA500", 500, "외부서버 호출에 실패하였습니다."),
 	EXTERNAL_MAIL_SEND("EA501", 500, "메일 발송에 실패했습니다."),
+
+	SYNC_ERROR("S500", 500, "동기화 오류, 로그를 확인하세요."),
+	SYNC_ERROR_LOCAL_IDX("S400", 400, "동기화 오류, 기존 인덱스가 없으면 로컬 인덱스는 필수입니다."),
 	;
 
 	

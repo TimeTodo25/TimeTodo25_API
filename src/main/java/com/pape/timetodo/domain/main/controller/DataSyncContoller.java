@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/v1/sync")
-@Tag(name = "로그아웃 용 동기화 컨트롤러", description = "동기화 API")
+@Tag(name = "동기화 컨트롤러", description = "동기화 API")
 public class DataSyncContoller {
 
     private final DataSyncService dataSyncService;
