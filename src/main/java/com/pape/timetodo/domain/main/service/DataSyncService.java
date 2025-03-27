@@ -2,6 +2,7 @@ package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.LogoutSyncRQ;
 import com.pape.timetodo.global.constant.DayWeekType;
+import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
 import com.pape.timetodo.global.exception.ExceptionCode;
 import com.pape.timetodo.global.jpa.entity.*;
@@ -37,9 +38,9 @@ public class DataSyncService {
     private final DdayRepository ddayRepository;
 
     // local_idx = db_idx : 하위 엔티티와의 연결을 위한 일시적 맵핑
-    private ThreadLocal<Map<Long, Long>> categoryMap = ThreadLocal.withInitial(HashMap::new);
-    private ThreadLocal<Map<Long, Long>> routineMap = ThreadLocal.withInitial(HashMap::new);
-    private ThreadLocal<Map<Long, Long>> todoMap = ThreadLocal.withInitial(HashMap::new);
+    private final ThreadLocal<Map<Long, Long>> categoryMap = ThreadLocal.withInitial(HashMap::new);
+    private final ThreadLocal<Map<Long, Long>> routineMap = ThreadLocal.withInitial(HashMap::new);
+    private final ThreadLocal<Map<Long, Long>> todoMap = ThreadLocal.withInitial(HashMap::new);
 
     @Transactional
     public void syncAll(LogoutSyncRQ rq) {
@@ -57,8 +58,19 @@ public class DataSyncService {
             syncRoutine(rq.getRoutines(), user);
             syncTodo(rq.getTodos(), user);
 
-            for (LogoutSyncRQ.TodoTimerHistoryDTO dto : rq.getTimerHistories()) {
+            for(LogoutSyncRQ.TodoTimerHistoryDTO dto : rq.getTimerHistories()) {
                 syncTimer(dto);
+            }
+
+            // 투두 타이머 없는데 Status가 P면 삭제, 아니면 Status U로 수정 (P: 루틴에서 벗어남 + 진행도 0)
+            List<TodoEntity> todosPreDelete = todoRepository.findByUsersEntityAndStatus(user, StatusType.PRE_DELETED.getValue());
+            for(TodoEntity todo : todosPreDelete) {
+                if(timerRepository.existsByTodoEntity(todo)) {
+                    todo.setStatus(StatusType.UPDATED.getValue());
+                    todoRepository.save(todo);
+                } else {
+                    todoRepository.delete(todo);
+                }
             }
 
         } catch (Exception e) {
@@ -149,6 +161,12 @@ public class DataSyncService {
                 entity = new RoutineEntity();
             } else { // 기존 idx 있으면 찾기 -> 수정
                 entity = routineRepository.findById(dto.getRoutineIdx()).orElse(new RoutineEntity());
+                if(dto.getCycleValue() != null) { // 기존 루틴 수정인데, 반복 타입을 바꿨으면 기존 투두 중 수행 안 한 건 다 삭제예정 처리 -> todo_, timer 업뎃 후 삭제
+                    List<TodoEntity> todosToDelete = todoRepository.findByRoutineEntityAndProgressStatus(entity, 0);
+                    for(TodoEntity todo : todosToDelete) {
+                        todo.setStatus(StatusType.PRE_DELETED.getValue()); // **
+                    }
+                }
             }
 
             entity.setUsersEntity(user);
