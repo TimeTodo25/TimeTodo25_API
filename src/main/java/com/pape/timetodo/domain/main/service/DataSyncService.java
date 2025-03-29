@@ -1,6 +1,7 @@
 package com.pape.timetodo.domain.main.service;
 
 import com.pape.timetodo.domain.main.model.AllSyncRQ;
+import com.pape.timetodo.domain.main.model.DeleteSyncRQ;
 import com.pape.timetodo.global.constant.DayWeekType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
@@ -15,10 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -297,4 +295,39 @@ public class DataSyncService {
 
     }
 
+    @Transactional
+    public void deleteAll(DeleteSyncRQ rq) {
+
+        // TODO
+        // 고려사항 1: 논리 삭제?
+        // 고려사항 2: 카테고리 / 루틴 삭제 시 휘하 엔티티 삭제? -> 기본 JPA 설정 상, 카테고리 삭제는 무관, 루틴 삭제는 투두 자동 삭제
+
+        List<Optional<DdayEntity>> ddayOps = rq.getDdays().stream().map(ddayRepository::findById).toList();
+        List<DdayEntity> ddayEntities = ddayOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        ddayRepository.deleteAll(ddayEntities);
+
+        List<Optional<CategoryEntity>> categoryOps = rq.getCategories().stream().map(categoryRepository::findById).toList();
+        List<CategoryEntity> categoryEntities = categoryOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        categoryRepository.deleteAll(categoryEntities);
+
+        List<Optional<RoutineEntity>> routineOps = rq.getRoutines().stream().map(routineRepository::findById).toList();
+        List<RoutineEntity> routineEntities = routineOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        routineRepository.deleteAll(routineEntities);
+
+        List<Optional<TodoEntity>> todoOps = rq.getTodos().stream().map(todoRepository::findById).toList();
+        List<TodoEntity> todoEntities = todoOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        todoRepository.deleteAll(todoEntities);
+    }
 }

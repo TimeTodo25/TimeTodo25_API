@@ -1,6 +1,7 @@
 package com.pape.timetodo.domain.main.controller;
 
 import com.pape.timetodo.domain.main.model.AllSyncRQ;
+import com.pape.timetodo.domain.main.model.DeleteSyncRQ;
 import com.pape.timetodo.domain.main.service.DataSyncService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,17 @@ public class DataSyncContoller {
     @PostMapping("/all")
     public ResponseEntity<?> syncAllData(@RequestBody AllSyncRQ rq) {
         dataSyncService.syncAll(rq);
+        return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    /**
+     * 동기화 - 삭제
+     * @param rq LogoutSyncRQ
+     * @return boolean
+     */
+    @DeleteMapping("/all/delete")
+    public ResponseEntity<?> syncDeleteData(@RequestBody DeleteSyncRQ rq) {
+        dataSyncService.deleteAll(rq);
         return ResponseEntity.ok(Map.of("success", true));
     }
 }
