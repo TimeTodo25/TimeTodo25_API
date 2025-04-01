@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -298,36 +299,68 @@ public class DataSyncService {
     @Transactional
     public void deleteAll(DeleteSyncRQ rq) {
 
-        // TODO
-        // 고려사항 1: 논리 삭제?
-        // 고려사항 2: 카테고리 / 루틴 삭제 시 휘하 엔티티 삭제? -> 기본 JPA 설정 상, 카테고리 삭제는 무관, 루틴 삭제는 투두 자동 삭제
+        // 고려사항 1: 논리 삭제로 기본 설정함
+        // 고려사항 2: 기본 JPA 설정 상, 카테고리 삭제는 하위 엔티티에 영향 없음, 루틴 삭제는 하위 투두 자동 삭제
+        // -> 그래서 루틴 삭제의 경우에는 투두 진행도 고려하여 연결 끊도록 함
 
+        LocalDateTime now = LocalDateTime.now();
+        Character d = StatusType.DELETED.getValue();
+
+        // 디데이
         List<Optional<DdayEntity>> ddayOps = rq.getDdays().stream().map(ddayRepository::findById).toList();
         List<DdayEntity> ddayEntities = ddayOps.stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .peek(dday -> {
+                    dday.setDeleteDt(now);
+                    dday.setStatus(d);
+                })
                 .toList();
-        ddayRepository.deleteAll(ddayEntities);
+        ddayRepository.saveAll(ddayEntities);
 
+        // 카테고리
         List<Optional<CategoryEntity>> categoryOps = rq.getCategories().stream().map(categoryRepository::findById).toList();
         List<CategoryEntity> categoryEntities = categoryOps.stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        categoryRepository.deleteAll(categoryEntities);
+        for(CategoryEntity category : categoryEntities) {
+            // 하위 루틴과 투두 처리에 대한 옵션 필요
+            category.setDeleteDt(now);
+            category.setStatus(d);
+        }
+        categoryRepository.saveAll(categoryEntities);
 
+        // 루틴
         List<Optional<RoutineEntity>> routineOps = rq.getRoutines().stream().map(routineRepository::findById).toList();
         List<RoutineEntity> routineEntities = routineOps.stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .toList();
-        routineRepository.deleteAll(routineEntities);
+        for(RoutineEntity routine : routineEntities) {
+            // 루틴에 속한 투두 중 이미 진행 중인 건 루틴과의 연결 끊기 (Cascade.ALL 이기 때문에)
+            List<TodoEntity> todoList = todoRepository.findByRoutineEntity(routine)
+                    .stream()
+                    .filter(todo -> todo.getProgressStatus() > 0 || !todo.getTodoTimerHistoryEntities().isEmpty())
+                    .toList();
+            todoList.forEach(todo -> todo.setRoutineEntity(null));
+            todoRepository.saveAll(todoList);
 
+            routine.setDeleteDt(now);
+            routine.setStatus(d);
+        }
+        routineRepository.saveAll(routineEntities);
+
+        // 투두
         List<Optional<TodoEntity>> todoOps = rq.getTodos().stream().map(todoRepository::findById).toList();
         List<TodoEntity> todoEntities = todoOps.stream()
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .peek(todo -> {
+                    todo.setDeleteDt(now);
+                    todo.setStatus(d);
+                })
                 .toList();
-        todoRepository.deleteAll(todoEntities);
+        todoRepository.saveAll(todoEntities);
     }
 }
