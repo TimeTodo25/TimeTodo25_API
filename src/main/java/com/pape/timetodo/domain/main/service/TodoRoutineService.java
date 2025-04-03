@@ -209,6 +209,11 @@ public class TodoRoutineService {
         return result;
     }
 
+    /**
+     * 홈화면 기분, 목표 등록
+     * @param rq RegisterHomeRQ
+     * @return Long
+     */
     public Long resisterHome(RegisterHomeRQ rq) {
 
         UsersEntity user = userUtil.getUsersEntity();

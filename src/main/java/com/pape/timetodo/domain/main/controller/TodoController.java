@@ -54,7 +54,7 @@ public class TodoController {
     /**
      * 홈화면 기분, 목표 등록
      */
-    @GetMapping("/register/home")
+    @PostMapping("/register/home")
     @Operation(summary = "홈화면 데이터 등록", description = "홈화면 기분과 목표를 등록합니다.")
     public ResponseEntity<Long> getHome(@Valid RegisterHomeRQ rq){
 
