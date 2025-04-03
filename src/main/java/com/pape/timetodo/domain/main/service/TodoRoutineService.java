@@ -215,6 +215,7 @@ public class TodoRoutineService {
 
         HomeEntity home = new HomeEntity();
         home.setUsersEntity(user);
+        home.setTodayDate(rq.getToday());
         home.setGoal(rq.getGoal());
         home.setMood(MoodType.valueOf(rq.getMood()));
 
