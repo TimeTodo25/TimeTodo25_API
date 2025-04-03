@@ -18,7 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class LogoutSyncRQ {
+public class AllSyncRQ {
 
     private List<DdayDTO> ddays;
     private List<CategoryDTO> categories;

@@ -9,6 +9,7 @@ import com.pape.timetodo.domain.main.model.todo.*;
 import com.pape.timetodo.domain.main.model.todo.GetTodoTimerHistoryRs.TimerHistory;
 import com.pape.timetodo.domain.main.model.todo.RegistTodoTimerRQ.TimeData;
 import com.pape.timetodo.global.constant.DayWeekType;
+import com.pape.timetodo.global.constant.MoodType;
 import com.pape.timetodo.global.constant.SortType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
@@ -38,6 +39,8 @@ public class TodoRoutineService {
     private final TodoRepository todoRepository;
 
     private final TodoQueryRepository todoQueryRepository;
+
+    private final HomeRepository homeRepository;
     
     private final CategoryRepository categoryRepository;
 
@@ -204,6 +207,24 @@ public class TodoRoutineService {
         result.setTimerHistoryList(timerHistoryList);
 
         return result;
+    }
+
+    /**
+     * 홈화면 기분, 목표 등록
+     * @param rq RegisterHomeRQ
+     * @return Long
+     */
+    public Long resisterHome(RegisterHomeRQ rq) {
+
+        UsersEntity user = userUtil.getUsersEntity();
+
+        HomeEntity home = new HomeEntity();
+        home.setUsersEntity(user);
+        home.setTodayDate(rq.getToday());
+        home.setGoal(rq.getGoal());
+        home.setMood(MoodType.valueOf(rq.getMood()));
+
+        return homeRepository.save(home).getIdx();
     }
 
     /**

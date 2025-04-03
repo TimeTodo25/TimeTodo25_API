@@ -1,6 +1,7 @@
 package com.pape.timetodo.domain.main.service;
 
-import com.pape.timetodo.domain.main.model.LogoutSyncRQ;
+import com.pape.timetodo.domain.main.model.AllSyncRQ;
+import com.pape.timetodo.domain.main.model.DeleteSyncRQ;
 import com.pape.timetodo.global.constant.DayWeekType;
 import com.pape.timetodo.global.constant.StatusType;
 import com.pape.timetodo.global.exception.AppException;
@@ -14,11 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -43,7 +42,7 @@ public class DataSyncService {
     private final ThreadLocal<Map<Long, Long>> todoMap = ThreadLocal.withInitial(HashMap::new);
 
     @Transactional
-    public void syncAll(LogoutSyncRQ rq) {
+    public void syncAll(AllSyncRQ rq) {
 
         try {
             UsersEntity user = userUtil.getUsersEntity();
@@ -58,7 +57,7 @@ public class DataSyncService {
             syncRoutine(rq.getRoutines(), user);
             syncTodo(rq.getTodos(), user);
 
-            for(LogoutSyncRQ.TodoTimerHistoryDTO dto : rq.getTimerHistories()) {
+            for(AllSyncRQ.TodoTimerHistoryDTO dto : rq.getTimerHistories()) {
                 syncTimer(dto);
             }
 
@@ -87,13 +86,13 @@ public class DataSyncService {
     /**
      * 디데이
      */
-    private void syncDday(List<LogoutSyncRQ.DdayDTO> ddayDtoList, UsersEntity user) {
+    private void syncDday(List<AllSyncRQ.DdayDTO> ddayDtoList, UsersEntity user) {
 
         if(ddayDtoList == null || ddayDtoList.isEmpty()) {
             return;
         }
 
-        for(LogoutSyncRQ.DdayDTO dto : ddayDtoList) {
+        for(AllSyncRQ.DdayDTO dto : ddayDtoList) {
             DdayEntity entity;
 
             if(dto.getDdayIdx() == null) { // 기존 idx 없으면 생성
@@ -117,13 +116,13 @@ public class DataSyncService {
     /**
      * 카테고리
      */
-    private void syncCategory(List<LogoutSyncRQ.CategoryDTO> categoryDtoList, UsersEntity user) {
+    private void syncCategory(List<AllSyncRQ.CategoryDTO> categoryDtoList, UsersEntity user) {
 
         if(categoryDtoList == null || categoryDtoList.isEmpty()) {
             return;
         }
 
-        for(LogoutSyncRQ.CategoryDTO dto : categoryDtoList) {
+        for(AllSyncRQ.CategoryDTO dto : categoryDtoList) {
             CategoryEntity entity;
 
             if(dto.getCategoryIdx() == null) { // 기존 idx 없으면 생성
@@ -148,13 +147,13 @@ public class DataSyncService {
     /**
      * 루틴
      */
-    private void syncRoutine(List<LogoutSyncRQ.RoutineDTO> routineDtoList, UsersEntity user) {
+    private void syncRoutine(List<AllSyncRQ.RoutineDTO> routineDtoList, UsersEntity user) {
 
         if(routineDtoList == null || routineDtoList.isEmpty()) {
             return;
         }
 
-        for(LogoutSyncRQ.RoutineDTO dto : routineDtoList) {
+        for(AllSyncRQ.RoutineDTO dto : routineDtoList) {
             RoutineEntity entity;
 
             if (dto.getRoutineIdx() == null) { // 기존 idx 없으면 생성
@@ -220,13 +219,13 @@ public class DataSyncService {
     /**
      * 투두
      */
-    private void syncTodo(List<LogoutSyncRQ.TodoDTO> todoDtoList, UsersEntity user) {
+    private void syncTodo(List<AllSyncRQ.TodoDTO> todoDtoList, UsersEntity user) {
 
         if(todoDtoList == null || todoDtoList.isEmpty()) {
             return;
         }
 
-        for(LogoutSyncRQ.TodoDTO dto : todoDtoList) {
+        for(AllSyncRQ.TodoDTO dto : todoDtoList) {
             TodoEntity entity;
 
             if (dto.getTodoIdx() == null) {
@@ -265,7 +264,7 @@ public class DataSyncService {
     /**
      * 투두 타이머
      */
-    private void syncTimer(LogoutSyncRQ.TodoTimerHistoryDTO dto) {
+    private void syncTimer(AllSyncRQ.TodoTimerHistoryDTO dto) {
 
         Long todoIdx;
         if(dto.getTodoIdx() == null) {
@@ -278,7 +277,7 @@ public class DataSyncService {
 
         List<TodoTimerHistoryEntity> timerHistoryEntities = new ArrayList<>();
 
-        for(LogoutSyncRQ.TodoTimerHistoryDTO.TimeData time: dto.getTimeDatas()){
+        for(AllSyncRQ.TodoTimerHistoryDTO.TimeData time: dto.getTimeDatas()){
 
             Duration duration = Duration.between(time.getStartDt(), time.getEndDt());
             long totalSecond = duration.toSeconds();
@@ -297,4 +296,71 @@ public class DataSyncService {
 
     }
 
+    @Transactional
+    public void deleteAll(DeleteSyncRQ rq) {
+
+        // 고려사항 1: 논리 삭제로 기본 설정함
+        // 고려사항 2: 기본 JPA 설정 상, 카테고리 삭제는 하위 엔티티에 영향 없음, 루틴 삭제는 하위 투두 자동 삭제
+        // -> 그래서 루틴 삭제의 경우에는 투두 진행도 고려하여 연결 끊도록 함
+
+        LocalDateTime now = LocalDateTime.now();
+        Character d = StatusType.DELETED.getValue();
+
+        // 디데이
+        List<Optional<DdayEntity>> ddayOps = rq.getDdays().stream().map(ddayRepository::findById).toList();
+        List<DdayEntity> ddayEntities = ddayOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .peek(dday -> {
+                    dday.setDeleteDt(now);
+                    dday.setStatus(d);
+                })
+                .toList();
+        ddayRepository.saveAll(ddayEntities);
+
+        // 카테고리
+        List<Optional<CategoryEntity>> categoryOps = rq.getCategories().stream().map(categoryRepository::findById).toList();
+        List<CategoryEntity> categoryEntities = categoryOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        for(CategoryEntity category : categoryEntities) {
+            // 하위 루틴과 투두 처리에 대한 옵션 필요
+            category.setDeleteDt(now);
+            category.setStatus(d);
+        }
+        categoryRepository.saveAll(categoryEntities);
+
+        // 루틴
+        List<Optional<RoutineEntity>> routineOps = rq.getRoutines().stream().map(routineRepository::findById).toList();
+        List<RoutineEntity> routineEntities = routineOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList();
+        for(RoutineEntity routine : routineEntities) {
+            // 루틴에 속한 투두 중 이미 진행 중인 건 루틴과의 연결 끊기 (Cascade.ALL 이기 때문에)
+            List<TodoEntity> todoList = todoRepository.findByRoutineEntity(routine)
+                    .stream()
+                    .filter(todo -> todo.getProgressStatus() > 0 || !todo.getTodoTimerHistoryEntities().isEmpty())
+                    .toList();
+            todoList.forEach(todo -> todo.setRoutineEntity(null));
+            todoRepository.saveAll(todoList);
+
+            routine.setDeleteDt(now);
+            routine.setStatus(d);
+        }
+        routineRepository.saveAll(routineEntities);
+
+        // 투두
+        List<Optional<TodoEntity>> todoOps = rq.getTodos().stream().map(todoRepository::findById).toList();
+        List<TodoEntity> todoEntities = todoOps.stream()
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .peek(todo -> {
+                    todo.setDeleteDt(now);
+                    todo.setStatus(d);
+                })
+                .toList();
+        todoRepository.saveAll(todoEntities);
+    }
 }

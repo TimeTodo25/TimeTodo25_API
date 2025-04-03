@@ -18,4 +18,6 @@ public interface TodoRepository extends JpaRepository<TodoEntity, Long>{
     List<TodoEntity> findByRoutineEntityAndProgressStatus(RoutineEntity entity, int progressStatus);
 
     List<TodoEntity> findByUsersEntityAndStatus(UsersEntity usersEntity, Character statusType);
+
+    List<TodoEntity> findByRoutineEntity(RoutineEntity routine);
 }
