@@ -23,12 +23,12 @@ public class RegistTodoTimerRQ {
     public static class TimeData{
         @NotNull
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @Schema(description = "투두 스톱워치 시작 시간데이터", example = "2024-10-24 09:00:00", implementation = LocalDateTime.class)
+        @Schema(description = "투두 스톱워치 시작 시간데이터", example = "2024-10-24 09:00:00", type = "string")
         private LocalDateTime startDt;
     
         @NotNull
         @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-        @Schema(description = "투두 스톱워치 종료 시간데이터", example = "2024-10-24 11:00:00", implementation = LocalDateTime.class)
+        @Schema(description = "투두 스톱워치 종료 시간데이터", example = "2024-10-24 11:00:00", type = "string")
         private LocalDateTime endDt;
 
     }
