@@ -52,6 +52,8 @@ public enum ExceptionCode {
 
 	SYNC_ERROR("S500", 500, "동기화 오류, 로그를 확인하세요."),
 	SYNC_ERROR_LOCAL_IDX("S400", 400, "동기화 오류, 기존 인덱스가 없으면 로컬 인덱스는 필수입니다."),
+
+	RATE_LIMIT("R400", 429, "요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요."),
 	;
 
 	

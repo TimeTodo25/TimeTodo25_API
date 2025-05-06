@@ -48,6 +48,7 @@ public class SecurityConfig {
             "/h2-console/**",
             // user 로그인 전
             "/v1/user/register",
+            "/v1/user/login",
             "/v1/user/sns/login",
             "/v1/user/nickname/check",
             "/v1/mail/send/register",
