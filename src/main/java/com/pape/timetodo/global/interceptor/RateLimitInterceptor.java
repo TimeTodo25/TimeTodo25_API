@@ -55,16 +55,16 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     // 각 공개 API별 요청 제한값 설정 (이 외 API 요청의 경우, 기본 제한값 설정에 따라 Username 기반으로 제한)
     private static final Map<String, Long> API_RATE_LIMITS = Map.of(
-            "/api/v1/user/register", 3L,
-            "/api/v1/user/login", 5L,
-            "/api/v1/user/sns/login", 5L,
-            "/api/v1/user/nickname/check", 5L,
-            "/api/v1/mail/send/register", 3L,
-            "/api/v1/mail/certification/register", 3L,
-            "/api/v1/mail/send/finding", 3L,
-            "/api/v1/mail/certification/id", 3L,
-            "/api/v1/noti/receive/agree", 5L,
-            "/api/v1/user/password", 3L
+            "/api/v1/user/register", 80L, //3L,
+            "/api/v1/user/login", 80L, //5L,
+            "/api/v1/user/sns/login", 80L, //5L,
+            "/api/v1/user/nickname/check", 80L, //5L,
+            "/api/v1/mail/send/register", 80L, //3L,
+            "/api/v1/mail/certification/register", 80L, //3L,
+            "/api/v1/mail/send/finding", 80L, //3L,
+            "/api/v1/mail/certification/id", 80L, //3L,
+            "/api/v1/noti/receive/agree", 80L, //5L,
+            "/api/v1/user/password", 80L //3L
     );
 
     // 클래스 초기화 시 청소 스케줄러 시작
