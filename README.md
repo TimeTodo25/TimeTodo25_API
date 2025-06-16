@@ -17,4 +17,4 @@ ex/ `Feat: 알 수 없는 api 추가 및 미지의 기능 구현 #연관이슈(�
 
 --- 
 
-release test를 위한 수정
+release test를 위한 수정2
