@@ -2,7 +2,7 @@ name: CI/CD Fly
 
 on:
   push:
-    branches: [ "release" ]
+    branches: [ "release2" ]
 
 jobs:
   build:
